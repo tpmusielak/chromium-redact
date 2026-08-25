@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Redactor visual demo</title>
+<link rel="stylesheet" href="../src/redact.css">
+<style>
+  body { font: 15px/1.6 Georgia, serif; margin: 20px; background: #fff; color: #1a1a1a; }
+  h1 { font: 600 16px system-ui, sans-serif; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+  .col > h2 { font: 600 11px system-ui, sans-serif; text-transform: uppercase; letter-spacing: .08em; color: #777; margin: 0 0 8px; }
+  .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px 14px; }
+  .card h3 { font: 700 17px/1.3 Georgia, serif; margin: 0 0 6px; }
+  .card p { margin: 0 0 8px; }
+  .meta { font: 12px system-ui, sans-serif; color: #667; }
+  .tag { display: inline-block; background: #eef; color: #335; border-radius: 4px; padding: 1px 6px; font: 11px system-ui, sans-serif; }
+  a { color: #1a5fb4; }
+  .dark { background: #16161a; color: #e6e6ea; border-color: #33333a; }
+  .dark .meta { color: #9a9aa8; }
+  .dark .tag { background: #2a2a3a; color: #b9b9d0; }
+  .dark a { color: #7fb3ff; }
+</style>
+</head>
+<body>
+
+<h1>Same markup, four treatments — keywords: <code>Acme Corp</code>, <code>bluebird</code></h1>
+
+<div class="grid">
+  <div class="col"><h2>Original</h2><div id="c0"></div></div>
+  <div class="col"><h2>Overlay</h2><div id="c1"></div></div>
+  <div class="col"><h2>Replace — bar</h2><div id="c2"></div></div>
+  <div class="col"><h2>Replace — blocks</h2><div id="c3"></div></div>
+</div>
+
+<template id="tpl">
+  <div class="card">
+    <h3>Acme Corp confirms bluebird</h3>
+    <p>Late on Tuesday, <strong>Acme</strong> <strong>Corp</strong> acknowledged that project
+      bluebird had slipped again. A spokesperson for Acme Corp declined to say whether
+      bluebird would ship this year.</p>
+    <p class="meta">Filed under <span class="tag">bluebird</span> ·
+      <a href="#" title="More about Acme Corp">Acme Corp</a> · 4 min read</p>
+  </div>
+  <div class="card dark" style="margin-top:12px">
+    <p>On a dark surface the bars follow the text colour, so bluebird stays legible as a
+      redaction rather than reading as a hole in the layout.</p>
+  </div>
+</template>
+
+<script>
+window.chrome = {
+  storage: { local: { get: (d, cb) => cb(Object.assign({}, d)), set: (v, cb) => cb && cb() }, onChanged: { addListener() {} } },
+  runtime: {}
+};
+</script>
+<script src="../src/config.js"></script>
+<script src="../src/engine.js"></script>
+<script>
+const tpl = document.getElementById('tpl');
+const setups = [
+  null,
+  { mode: 'overlay' },
+  { mode: 'replace', fill: 'bar' },
+  { mode: 'replace', fill: 'blocks' }
+];
+setups.forEach((overrides, i) => {
+  const host = document.getElementById('c' + i);
+  host.appendChild(tpl.content.cloneNode(true));
+  if (!overrides) return;
+  const cfg = Object.assign({}, CR_DEFAULTS, { keywords: ['Acme Corp', 'bluebird'] }, overrides);
+  const r = new CRRedactor(cfg);
+  r.active = true;
+  r.sweep(host, null);
+  r.observeRoot(host);
+  if (cfg.mode === 'replace') document.fonts.ready.then(() => r.remeasure());
+});
+</script>
+</body>
+</html>

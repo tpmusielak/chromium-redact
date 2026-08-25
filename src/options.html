@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Redactor options</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="options">
+
+<h1>Redactor</h1>
+
+<section>
+  <h2>Keywords</h2>
+  <p class="hint">One per line. Matching is literal — no regular expressions.</p>
+  <textarea id="keywords" rows="10" spellcheck="false" placeholder="Acme Corp&#10;project bluebird&#10;j.smith@example.com"></textarea>
+  <p class="hint" id="count"></p>
+  <label class="row"><input type="checkbox" id="wholeWord"> Whole words only <span class="hint">— “cat” won’t match “catalogue”</span></label>
+  <label class="row"><input type="checkbox" id="caseSensitive"> Case sensitive</label>
+</section>
+
+<section>
+  <h2>Mode</h2>
+  <label class="row">
+    <input type="radio" name="mode" value="overlay">
+    <span><strong>Overlay</strong> — paint over the text
+      <span class="hint">Layout is untouched and the page keeps working normally, but the text is still in the DOM: selectable, copyable, and visible in DevTools.</span>
+    </span>
+  </label>
+  <label class="row">
+    <input type="radio" name="mode" value="replace">
+    <span><strong>Replace</strong> — remove the text from the page
+      <span class="hint">The text is deleted from the DOM and a box of the same measured width takes its place. Genuinely gone, but scripts on the page that read their own text will see the redacted version.</span>
+    </span>
+  </label>
+
+  <div id="fillWrap" class="indent">
+    <label class="row"><input type="radio" name="fill" value="bar"> Solid bar</label>
+    <label class="row"><input type="radio" name="fill" value="blocks"> Block characters (█)</label>
+  </div>
+</section>
+
+<section>
+  <h2>Coverage</h2>
+  <label class="row"><input type="checkbox" id="redactTitle"> Page title (the browser tab)</label>
+  <label class="row"><input type="checkbox" id="redactAttributes"> Tooltips and labels <span class="hint">— title, alt, placeholder, aria-label</span></label>
+  <label class="row"><input type="checkbox" id="blockCopy"> Overlay mode: block selecting the hidden text</label>
+</section>
+
+<section>
+  <h2>Loading</h2>
+  <label class="row"><input type="checkbox" id="cloak"> Hide the page until the first pass finishes <span class="hint">— prevents any flash of unredacted text; usually costs a couple of milliseconds</span></label>
+  <label class="row">Give up hiding after
+    <input type="number" id="cloakTimeoutMs" min="100" max="10000" step="100"> ms
+  </label>
+</section>
+
+<section>
+  <h2>Where it runs</h2>
+  <label class="row"><input type="radio" name="siteMode" value="all"> Every site</label>
+  <label class="row"><input type="radio" name="siteMode" value="blocklist"> Every site except those listed below</label>
+  <label class="row"><input type="radio" name="siteMode" value="allowlist"> Only the sites listed below</label>
+  <textarea id="sites" rows="4" spellcheck="false" placeholder="example.com&#10;mail.google.com"></textarea>
+  <p class="hint">One hostname per line. Subdomains are included.</p>
+</section>
+
+<div class="actions">
+  <button id="save" class="primary">Save</button>
+  <button id="reset">Reset to defaults</button>
+  <span id="status" class="status"></span>
+</div>
+
+<p class="hint footnote">
+  Redaction happens in the page you are looking at. Anyone with access to this browser can
+  read the original by opening DevTools, viewing source, or turning the extension off — so
+  this is for screen sharing, demos and shoulder-surfing, not for withholding data from the
+  person at the keyboard. Text drawn into canvas, video or images has no DOM and cannot be
+  redacted.
+</p>
+
+<script src="config.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

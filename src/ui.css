@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1c1c1e;
+  --muted: #6b6b70;
+  --line: #dcdce0;
+  --field: #ffffff;
+  --accent: #1a1a1a;
+  --accent-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1e20;
+    --fg: #ececee;
+    --muted: #9a9aa0;
+    --line: #3a3a3e;
+    --field: #141416;
+    --accent: #ececee;
+    --accent-fg: #1e1e20;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+h1 { font-size: 20px; margin: 0 0 20px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; }
+
+section {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+}
+
+.hint { color: var(--muted); font-size: 12px; margin: 4px 0; }
+.hint.footnote { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 8px; }
+
+label.row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 8px 0;
+}
+label.row .hint { display: block; margin: 2px 0 0; }
+.indent { margin-left: 26px; }
+
+textarea, input[type="number"], input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--field);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+input[type="number"] { width: 90px; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+button {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+button:hover { opacity: 0.85; }
+
+.status { color: var(--muted); font-size: 12px; }
+
+/* Options page reads better constrained. */
+body.options { max-width: 640px; }
+
+/* Popup */
+body.popup { width: 300px; padding: 14px 16px; }
+body.popup h1 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; }
+body.popup section { border: 0; padding: 10px 0; }
+body.popup .actions { border: 0; padding-top: 10px; }
+body.popup .site { font: 12px ui-monospace, monospace; color: var(--muted); }
+
+.switch { display: flex; align-items: center; gap: 8px; }

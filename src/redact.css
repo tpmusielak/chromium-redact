@@ -1,0 +1,53 @@
+/* Injected at document_start, before the content script runs, so the cloak
+   class has a rule to match the instant JS adds it. */
+
+html.cr-cloak {
+  visibility: hidden !important;
+}
+
+/* Bars take their colour from the surrounding text rather than a fixed black.
+   That keeps them contrasting on dark themes and inside coloured text, where a
+   hard-coded #000 would read as a hole in the page. */
+
+/* Overlay mode: the text is still there, painted over.
+   -webkit-text-fill-color (not `color`) hides the glyphs, so `currentColor`
+   still resolves to the original text colour for the background. */
+span[data-cr="o"] {
+  background-color: currentColor !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  border-radius: 1px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+span[data-cr="o"]::selection {
+  background-color: currentColor !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+span[data-cr-nc="1"] {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Replace mode, solid bar: an empty box carrying the width the removed text
+   would have occupied, so the line doesn't reflow. */
+span[data-cr="r"] {
+  display: inline-block;
+  height: 0.95em;
+  vertical-align: -0.15em;
+  background-color: currentColor;
+  border-radius: 1px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Replace mode, block characters: real glyphs, so no box geometry. */
+span[data-cr="r"][data-cr-f="b"] {
+  display: inline;
+  height: auto;
+  vertical-align: baseline;
+  background-color: transparent;
+  border-radius: 0;
+}

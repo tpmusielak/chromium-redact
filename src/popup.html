@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Redactor</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="popup">
+
+<h1>Redactor <span class="hint" id="count"></span></h1>
+
+<section>
+  <label class="row switch"><input type="checkbox" id="enabled"> <strong>Redaction on</strong></label>
+  <label class="row switch"><input type="checkbox" id="site"> Run on <span class="site" id="host">this site</span></label>
+</section>
+
+<section>
+  <label class="row"><input type="radio" name="mode" value="overlay"> Overlay <span class="hint">(paint over)</span></label>
+  <label class="row"><input type="radio" name="mode" value="replace"> Replace <span class="hint">(remove text)</span></label>
+</section>
+
+<div class="actions">
+  <button id="options" class="primary">Keywords &amp; options</button>
+  <span class="status" id="status"></span>
+</div>
+
+<script src="config.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

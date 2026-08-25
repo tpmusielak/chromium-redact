@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Redactor engine tests</title>
+<style>
+  body { font: 14px/1.6 system-ui, sans-serif; margin: 24px; }
+  #fixture { position: absolute; left: -9999px; top: 0; width: 600px; font: 16px/1.4 Arial, sans-serif; }
+  .pass { color: #0a7d38; }
+  .fail { color: #c0271d; font-weight: 600; }
+  li { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Redactor engine tests</h1>
+<ul id="results"></ul>
+
+<!-- Stand-in for the extension APIs so the engine can be exercised in a plain page. -->
+<script>
+window.chrome = {
+  storage: {
+    local: { get: (defaults, cb) => cb(Object.assign({}, defaults)), set: (v, cb) => cb && cb() },
+    onChanged: { addListener() {} }
+  },
+  runtime: {}
+};
+</script>
+<script src="../src/config.js"></script>
+<script src="../src/engine.js"></script>
+<script src="tests.js"></script>
+</body>
+</html>
