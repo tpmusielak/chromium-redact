@@ -21,6 +21,9 @@ function fill(cfg) {
   $('cloak').checked = cfg.cloak;
   $('cloakTimeoutMs').value = cfg.cloakTimeoutMs;
   $('mimicCase').checked = cfg.mimicCase;
+  $('network').checked = cfg.network;
+  $('networkUrls').value = (cfg.networkUrls || []).join('\n');
+  $('networkPaths').value = (cfg.networkPaths || []).join('\n');
   radio('mode', cfg.mode);
   radio('fill', cfg.fill);
   radio('substituteStyle', cfg.substituteStyle);
@@ -41,6 +44,9 @@ function collect() {
     cloak: $('cloak').checked,
     cloakTimeoutMs: Number.isFinite(timeout) ? Math.min(10000, Math.max(100, timeout)) : CR_DEFAULTS.cloakTimeoutMs,
     mimicCase: $('mimicCase').checked,
+    network: $('network').checked,
+    networkUrls: lines($('networkUrls').value),
+    networkPaths: lines($('networkPaths').value),
     mode: radioValue('mode') || CR_DEFAULTS.mode,
     fill: radioValue('fill') || CR_DEFAULTS.fill,
     substituteStyle: radioValue('substituteStyle') || CR_DEFAULTS.substituteStyle,
@@ -74,8 +80,20 @@ document.addEventListener('input', syncUi);
 document.addEventListener('change', syncUi);
 
 $('save').addEventListener('click', async () => {
-  await crSaveConfig(collect());
-  flash('Saved — open tabs update immediately.');
+  const before = await crLoadConfig();
+  const next = collect();
+  await crSaveConfig(next);
+
+  // The DOM engine re-runs in open tabs on the storage change, but the network
+  // hook is a content script the service worker registers or unregisters, and
+  // that only takes effect on the next navigation.
+  const netChanged = before.network !== next.network
+    || JSON.stringify(before.networkUrls) !== JSON.stringify(next.networkUrls)
+    || JSON.stringify(before.networkPaths) !== JSON.stringify(next.networkPaths);
+
+  flash(netChanged
+    ? 'Saved — network changes apply on the next page load.'
+    : 'Saved — open tabs update immediately.');
 });
 
 $('reset').addEventListener('click', async () => {

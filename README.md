@@ -5,7 +5,7 @@ A Chrome (MV3) extension that hides a list of phrases on every page you visit, a
 ## Install
 
 1. Open `chrome://extensions`
-2. Turn on **Developer mode**
+2. Turn on **Developer mode** (Chrome 111 or newer)
 3. **Load unpacked** → select this folder
 4. Click the extension icon → **Phrases & options**, and add some phrases
 
@@ -106,11 +106,119 @@ They have to blend into whatever site you are looking at, which is why bars take
 from `currentColor` rather than from a fixed palette -- a Blueprint blue-gray box would look
 like a rendering fault on a page that isn't a Blueprint app.
 
+## Network responses (advanced, off by default)
+
+Everything above changes how a page *looks*. This changes the data the page *receives*:
+XMLHttpRequest and fetch responses are redacted in flight, before the application ever sees
+them. That makes it the cleanest answer to content the DOM engine cannot reach -- a chart
+drawn into a `<canvas>` never receives the name in the first place.
+
+It is narrowed two ways, and both matter:
+
+**URL patterns** decide which requests are touched. Nothing happens without them; there is no
+"all traffic" option.
+
+```
+https://app.example.com/api/*
+*/api/customers*
+/api/orders
+```
+
+`*` is a wildcard and the pattern must match the whole URL. A line with no wildcard is
+treated as "contains", because that is what people type. Matching is case-insensitive and
+always runs against the **absolute** URL -- `xhr.open()` is normally called with a relative
+path while a fetch `Response` reports an absolute one, so matching the raw argument would
+silently cover one path and not the other.
+
+**JSON paths** decide which fields inside a matched response are touched.
+
+```
+accountName             a top-level field
+contacts[*].name        every element   (contacts[0].name for one)
+customer                a key names its whole subtree
+*.name                  any key at that level
+**.email                any depth
+```
+
+Leave it empty to redact every string value in the body. Keys and numbers are never touched,
+so the payload still parses and property lookups still work. If you set paths and the
+response is not JSON, it is left alone -- paths are a JSON concept, and ignoring them would
+defeat the narrowing you asked for.
+
+Redaction is structure-aware: the body is parsed, string values are rewritten, and it is
+re-serialised. A blanket regex over the raw JSON text would rewrite keys too, and would break
+parsing outright if a stand-in contained a quote or a backslash. Values reachable by two
+paths are redacted once, not twice.
+
+### The MAIN world is not the isolated world
+
+`net.js` is a **single self-contained file** with no dependency on any other. That is not
+tidiness, it is the fix for two bugs that only appeared on a real install.
+
+It originally injected `config.js` alongside it and called into it. First that failed because
+MAIN-world injection wraps each file, so `config.js`'s top-level declarations were not visible
+-- isolated-world content scripts share the world's global object, MAIN-world ones do not.
+Exporting explicitly via `window` did not fix it either: `config.js` turned out not to execute
+in the page context at all.
+
+Rather than keep diagnosing the page context from outside it, the dependency is gone. The
+isolated-world content script does all the compiling -- phrase pattern, URL patterns, JSON
+paths -- and sends the results as **plain data**: regex sources, an array of replacement
+pairs, arrays of path tokens. Nothing crosses the boundary as code. Rebuilding a `RegExp` from
+a string is not eval, so it stays within page CSP.
+
+`net.js` keeps private copies of two small helpers (`matchKey`, `mimicCase`) that the DOM
+engine also needs and that cannot be shared across the boundary. Tests assert the two
+implementations do not drift, and that `config.js`'s path compiler emits exactly the token
+shape `net.js` reads.
+
+Three tests pin this, all of which would have caught the shipped bugs:
+
+- `test/net-solo-harness.html` runs the whole suite with **`net.js` and nothing else loaded**.
+- A scan asserts `net.js` contains no reference to any `cr*`/`CR_*` identifier at all -- the
+  normal harness loads both files as ordinary page scripts where they *do* share globals, so
+  the mistake would pass there and fail only once installed.
+- A check that the service worker registers exactly one file.
+
+**A hold that never releases hangs the page.** `send()` and `fetch` wait for the brief so a
+response cannot arrive before it can be redacted. If the brief never comes, every request on
+the page hangs forever. It releases on the brief arriving, on an unreadable brief, or after
+2s. The content script also briefs the hook on *every* page, including ones where redaction is
+off or the site is excluded -- an inert brief carries no URL patterns, so traffic passes
+through instead of stalling. Passing traffic through unredacted is the lesser failure against
+breaking the page, and it is logged rather than silent.
+
+### What it costs
+
+- **You are corrupting application data, not its presentation.** A redacted identifier may
+  404. In substitute mode an application may write the stand-in back to the server or into
+  local storage. This is why the URL list is mandatory and the paths exist.
+- **It does not clean the DevTools Network panel.** The hook runs after the browser has the
+  response. Chrome offers no way around this: `webRequest` cannot rewrite bodies
+  (`filterResponseData` is Firefox-only) and `declarativeNetRequest` only does blocking,
+  redirects and headers.
+- **The page can read your phrase list.** The hook has to run in the MAIN world, because
+  `XMLHttpRequest` and `fetch` live on the page's own prototypes -- patching them from the
+  isolated world would only patch our copies. So the script is registered dynamically by the
+  service worker and only while the feature is on: users who never enable it never get
+  MAIN-world injection at all.
+- **Enabling or disabling takes effect on the next page load**, since registration is what
+  changes, not the page.
+
+Out of reach: requests made from Workers and ServiceWorkers (separate globals), `EventSource`,
+WebSocket frames, `responseType` of `blob`/`arraybuffer`/`document`, and streaming consumers
+using `res.body.getReader()` -- buffering those would break streaming semantics, which is
+another reason to scope by URL.
+
+Requests issued before the config arrives are held rather than leaked: `send()` and `fetch`
+wait on the config handshake, which lands within a millisecond or two of `document_start`,
+long before any request could complete.
+
 ## Limitations
 
 - **Not a security boundary.** Anyone at this browser can read the original via DevTools, view-source, the network tab, or by disabling the extension. This is for screen sharing, demos, and shoulder-surfing — not for withholding data from the person at the keyboard.
 - **Substitute mode changes what the page appears to say.** That is the feature, but it also means you can mislead yourself. The dotted-underline option exists for that reason.
-- **No DOM, no redaction.** Text baked into `<canvas>`, WebGL, video, images, or the built-in PDF viewer is unreachable.
+- **No DOM, no redaction.** Text baked into `<canvas>`, WebGL, video, images, or the built-in PDF viewer is unreachable to the DOM engine. Where that content comes from an API response, network redaction reaches it before it is drawn.
 - **Skipped on purpose:** `contenteditable` regions and `<textarea>` (redacting what you're typing corrupts your own input), SVG and MathML (an HTML `<span>` wouldn't render there), `<option>` text, and closed shadow roots.
 - **Matching is ASCII word-boundary based** when "whole words only" is on, so non-Latin scripts are better served with that setting off.
 - **Framework hydration.** Modifying the DOM before React/Vue hydrate can cause a mismatch on some sites. All three modes carry this risk; overlay is the gentlest.
@@ -123,10 +231,14 @@ src/config.js        defaults, storage, list parsing, phrase → regex compilati
 src/engine.js        the redaction engine (collect / measure / apply, observer)
 src/content.js       per-frame bootstrap and the cloak ordering
 src/redact.css       cloak rule + redaction styles, injected at document_start
+src/background.js    service worker; registers the network hook only while it is on
+src/net.js           MAIN-world XHR/fetch redaction; self-contained, no imports
 src/options.html|js  full settings
 src/popup.html|js    quick toggles: on/off, per-site, mode
 src/ui.css           Blueprint-flavoured styling for options and popup
 test/harness.html    57 engine tests — serve the folder and open it
+test/net-harness.html 65 network tests (URL patterns, JSON paths, XHR, fetch)
+test/net-solo-harness.html   the same suite with net.js and nothing else loaded
 test/demo.html       side-by-side of all five treatments
 test/ui-preview.html the options page and popup with chrome.* stubbed
 ```
@@ -139,4 +251,4 @@ Phrases are stored in `chrome.storage.local`, not `.sync`, deliberately: the lis
 python -m http.server 8731
 ```
 
-Then open `http://localhost:8731/test/harness.html` (engine tests) and `http://localhost:8731/test/demo.html` (visual comparison). Both stub the `chrome.*` APIs, so no extension install is needed.
+Then open `http://localhost:8731/test/harness.html` (engine tests), `http://localhost:8731/test/net-harness.html` and `net-solo-harness.html` (network tests) and `http://localhost:8731/test/demo.html` (visual comparison). Both stub the `chrome.*` APIs, so no extension install is needed.

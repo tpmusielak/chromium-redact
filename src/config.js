@@ -17,24 +17,35 @@ const CR_DEFAULTS = {
   cloak: true,              // hide the page until the first sweep finishes
   cloakTimeoutMs: 1500,     // failsafe: never stay hidden longer than this
   siteMode: 'all',          // 'all' | 'blocklist' | 'allowlist'
-  sites: []
+  sites: [],
+
+  /* Network response redaction. Opt-in, and inert without URL patterns: this
+     rewrites application data rather than its presentation, so it is never on
+     by default and never applies to "all traffic". */
+  network: false,
+  networkUrls: [],          // URL glob patterns; empty means the feature does nothing
+  networkPaths: []          // JSON paths; empty means every string value in the body
 };
 
 /* storage.local rather than storage.sync, on purpose: the keyword list is by
    definition the set of words you are trying to keep off the screen, and syncing
    it would copy it to Google's servers. Switch to chrome.storage.sync here if
    you would rather have cross-device sync (note the 8KB-per-item quota). */
-const CR_STORE = chrome.storage.local;
+const CR_STORE = (typeof chrome !== 'undefined' && chrome.storage)
+  ? chrome.storage.local
+  : null;   // MAIN-world injection has no extension APIs; it is handed its config instead
 
 /* Built from a string rather than a regex literal so the escape survives
    verbatim: U+00A0 is whitespace on screen but not to \s. */
 const CR_WS = new RegExp('[\\s\\u00a0]+', 'g');
 
 function crLoadConfig() {
+  if (!CR_STORE) return Promise.resolve(Object.assign({}, CR_DEFAULTS));
   return new Promise((resolve) => CR_STORE.get(CR_DEFAULTS, (v) => resolve(v)));
 }
 
 function crSaveConfig(patch) {
+  if (!CR_STORE) return Promise.resolve();
   return new Promise((resolve) => CR_STORE.set(patch, () => resolve()));
 }
 
@@ -151,4 +162,72 @@ function crMimicCase(matched, replacement) {
     return replacement.charAt(0).toLowerCase() + replacement.slice(1);
   }
   return replacement;
+}
+
+
+/* ---------------- network response redaction ---------------- */
+
+// URL glob. "*" is the wildcard and the pattern must match the whole URL:
+//
+//   https://app.example.com/api/*
+//   */api/customers*
+//
+// A pattern with no wildcard at all is treated as "contains", because that is
+// what people type and expect. Matching is case-insensitive and always runs
+// against the absolute URL -- xhr.open() is usually called with a relative
+// path while a fetch Response reports an absolute one, and matching the raw
+// argument would silently cover one path and not the other.
+function crCompileUrlPattern(raw) {
+  const p = String(raw).trim();
+  if (!p) return null;
+  const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*');
+  const source = p.indexOf('*') === -1 ? '.*' + escaped + '.*' : '^' + escaped + '$';
+  try {
+    return new RegExp(source, 'i');
+  } catch (e) {
+    return null;
+  }
+}
+
+function crUrlMatcher(patterns) {
+  const compiled = (patterns || []).map(crCompileUrlPattern).filter(Boolean);
+  if (!compiled.length) return () => false;   // no patterns means no traffic is touched
+  return (url) => {
+    const u = String(url || '');
+    for (const re of compiled) { re.lastIndex = 0; if (re.test(u)) return true; }
+    return false;
+  };
+}
+
+/* JSON path into a token list.
+ *
+ *   accountName            a top-level key
+ *   contacts[*].name       every element of an array  ([] is accepted for [*])
+ *   contacts[0].email      one element
+ *   customer               the whole subtree under a key
+ *   *.name                 any key at this level
+ *   **.email               any depth
+ */
+function crCompilePath(path) {
+  const tokens = [];
+  for (const segment of String(path).trim().split('.')) {
+    if (!segment) continue;
+    const parts = /^([^[\]]*)((?:\[[^\]]*\])*)$/.exec(segment);
+    if (!parts) return null;
+    const name = parts[1];
+    if (name === '**') tokens.push({ t: 'deep' });
+    else if (name === '*') tokens.push({ t: 'any' });
+    else if (name) tokens.push({ t: 'key', v: name });
+    for (const bracket of parts[2].match(/\[[^\]]*\]/g) || []) {
+      const inner = bracket.slice(1, -1).trim();
+      if (inner === '' || inner === '*') tokens.push({ t: 'anyIndex' });
+      else if (/^\d+$/.test(inner)) tokens.push({ t: 'index', v: parseInt(inner, 10) });
+      else return null;
+    }
+  }
+  return tokens.length ? tokens : null;
+}
+
+function crCompilePaths(paths) {
+  return (paths || []).map(crCompilePath).filter(Boolean);
 }

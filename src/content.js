@@ -35,8 +35,54 @@
 
   const enabledHere = (cfg) => cfg.enabled && crSiteAllowed(cfg, location.hostname);
 
+  /* Hand the config to the MAIN-world network hook, if it is installed. It has
+     no extension APIs of its own, and it holds requests back until this
+     arrives, so a response can never be delivered before it can be redacted.
+     A JSON string, because object payloads do not reliably survive a
+     CustomEvent crossing the world boundary. */
+  /* Everything the MAIN-world hook needs, compiled HERE and sent as plain data:
+     regex sources, a replacements array, JSON path token arrays. The hook is a
+     single self-contained file precisely because a second injected file could
+     not be relied on to execute in the page context -- so nothing crosses the
+     boundary as code.
+
+     Dispatched on EVERY page, including ones where redaction is off or the site
+     is excluded. The hook holds requests until briefed, so staying silent would
+     hang every request on the page rather than leaving it unredacted. */
+  const briefNetworkHook = (cfg) => {
+    let brief = { active: false };
+
+    if (cfg && cfg.network && enabledHere(cfg)) {
+      const compiled = crCompile(cfg);
+      const urlPatterns = (cfg.networkUrls || [])
+        .map(crCompileUrlPattern)
+        .filter(Boolean)
+        .map((re) => re.source);
+
+      // Both are required: no phrases means nothing to redact, no URL patterns
+      // means no traffic is in scope.
+      if (compiled.pattern && urlPatterns.length) {
+        brief = {
+          active: true,
+          pattern: { source: compiled.pattern.source, flags: compiled.pattern.flags },
+          replacements: Array.from(compiled.replacements.entries()),
+          urlPatterns,
+          paths: crCompilePaths(cfg.networkPaths),
+          mode: cfg.mode,
+          mimicCase: cfg.mimicCase,
+          caseSensitive: cfg.caseSensitive
+        };
+      }
+    }
+
+    document.dispatchEvent(new CustomEvent('cr-redactor-net', {
+      detail: JSON.stringify(brief)
+    }));
+  };
+
   const run = (cfg) => {
     config = cfg;
+    briefNetworkHook(cfg);
     if (!enabledHere(cfg)) return;
     redactor = new CRRedactor(cfg);
     redactor.start(document);
@@ -59,7 +105,10 @@
       }
       run(cfg);
     })
-    .catch((err) => console.error('[Redactor]', err))
+    .catch((err) => {
+      console.error('[Redactor]', err);
+      briefNetworkHook(null);   // release the network hook's hold
+    })
     .finally(() => {
       clearTimeout(failsafe);
       uncloak();

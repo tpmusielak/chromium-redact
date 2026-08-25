@@ -182,6 +182,57 @@
   </div>
 
   <div class="bp-card">
+    <h5 class="bp-heading">Network responses <span class="bp-tag bp-tag-minimal">advanced</span></h5>
+
+    <div class="bp-callout bp-intent-warning bp-running-text" style="margin-bottom: 15px;">
+      <p>
+        Everything above changes how a page <em>looks</em>. This changes the data the page
+        <em>receives</em>, so an application can genuinely misbehave — a redacted identifier
+        may 404, and a stand-in may be written back to the server or into local storage.
+      </p>
+      <p>
+        It also does not clean the DevTools Network panel, which still shows the original
+        response. Changing this setting takes effect on the next page load.
+      </p>
+    </div>
+
+    <label class="bp-control bp-checkbox bp-control-rich">
+      <input type="checkbox" id="network">
+      <span class="bp-control-indicator"></span>
+      <span class="bp-control-label">Redact matching API responses</span>
+      <div class="bp-form-helper-text">
+        Off by default, and inert until you list URL patterns below. While it is on, the hook
+        runs in the page&rsquo;s own JavaScript context, which means the page can read your
+        phrase list.
+      </div>
+    </label>
+
+    <div class="bp-form-group">
+      <label class="bp-label" for="networkUrls">URL patterns</label>
+      <textarea id="networkUrls" class="bp-input" rows="4" spellcheck="false"
+        placeholder="https://app.example.com/api/*&#10;*/api/customers*"></textarea>
+      <div class="bp-form-helper-text">
+        One per line. <code>*</code> is a wildcard and the pattern must match the whole URL;
+        a line with no wildcard is treated as &ldquo;contains&rdquo;. No patterns means no
+        traffic is touched. Matched against the absolute URL.
+      </div>
+    </div>
+
+    <div class="bp-form-group">
+      <label class="bp-label" for="networkPaths">JSON paths</label>
+      <textarea id="networkPaths" class="bp-input" rows="4" spellcheck="false"
+        placeholder="accountName&#10;contacts[*].name&#10;**.email"></textarea>
+      <div class="bp-form-helper-text">
+        One per line, restricting which fields are redacted. <code>contacts[*].name</code> for
+        every element, <code>contacts[0].name</code> for one, <code>*</code> for any key at a
+        level, <code>**</code> for any depth. Naming a key covers its whole subtree.
+        Leave empty to redact every string value in the body. Keys and numbers are never
+        touched, and if you set paths but the response is not JSON, it is left alone.
+      </div>
+    </div>
+  </div>
+
+  <div class="bp-card">
     <div class="bp-button-group">
       <button id="save" class="bp-button bp-intent-primary">Save</button>
       <button id="reset" class="bp-button">Reset to defaults</button>
