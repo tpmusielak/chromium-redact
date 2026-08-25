@@ -8,6 +8,37 @@ A Chrome (MV3) extension that hides a list of phrases on every page you visit, a
 2. Turn on **Developer mode** (Chrome 111 or newer)
 3. **Load unpacked** → select this folder
 4. Click the extension icon → **Phrases & options**, and add some phrases
+5. On a site you want redacted, open the extension and choose **Enable on this site**
+
+## Site access is opt-in
+
+Installing asks for **no site access at all**. The manifest declares no
+`host_permissions` and no static `content_scripts` — a static block would force host access at
+install time, which is the thing worth avoiding. A fresh install can read nothing, and the
+extension does nothing anywhere until you grant a site.
+
+Granting happens per site, from the popup, one at a time. `*://*/*` is declared as an
+**optional** host permission, so "Grant access to all sites" is available in the options page
+for anyone who wants it — but it is a deliberate choice you make, not the starting position.
+
+The service worker keeps the registered content scripts in step with whatever has actually
+been granted: it rebuilds the registration from `chrome.permissions.getAll()` on install, on
+startup, and whenever a permission is added or removed. Granting from the popup reloads the
+tab you are on, so it takes effect immediately rather than on the next navigation. Revoking
+unregisters the scripts for that origin.
+
+The popup reads the current tab's URL through **`activeTab`**, which is granted for the one
+tab when you open the extension and shows no install warning. That is how it can offer
+"Enable on `news.example.com`" without already having permission to read that site.
+
+Only `http` and `https` pages can be granted; the popup says so on anything else.
+
+Two layers, deliberately:
+
+| | |
+|---|---|
+| **Site access** (permissions) | The hard gate. Nothing runs without it. Revoking means the extension cannot read the site at all. |
+| **Where it runs** (settings) | A soft filter that can only narrow. Pauses redaction on a granted site without giving up the permission, so you do not have to grant it again afterwards. |
 
 ## The list
 
@@ -226,17 +257,17 @@ long before any request could complete.
 ## Files
 
 ```
-manifest.json        MV3 manifest; content script at document_start, all frames
+manifest.json        MV3 manifest; no host permissions, no static content scripts
 src/config.js        defaults, storage, list parsing, phrase → regex compilation
 src/engine.js        the redaction engine (collect / measure / apply, observer)
 src/content.js       per-frame bootstrap and the cloak ordering
 src/redact.css       cloak rule + redaction styles, injected at document_start
-src/background.js    service worker; registers the network hook only while it is on
+src/background.js    service worker; registers content scripts for granted origins only
 src/net.js           MAIN-world XHR/fetch redaction; self-contained, no imports
 src/options.html|js  full settings
 src/popup.html|js    quick toggles: on/off, per-site, mode
 src/ui.css           Blueprint-flavoured styling for options and popup
-test/harness.html    57 engine tests — serve the folder and open it
+test/harness.html    70 engine tests — serve the folder and open it
 test/net-harness.html 65 network tests (URL patterns, JSON paths, XHR, fetch)
 test/net-solo-harness.html   the same suite with net.js and nothing else loaded
 test/demo.html       side-by-side of all five treatments

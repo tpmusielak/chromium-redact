@@ -103,3 +103,75 @@ $('reset').addEventListener('click', async () => {
 });
 
 crLoadConfig().then(fill);
+
+/* ---------------- site access ---------------- */
+
+function grantedOrigins() {
+  return new Promise((resolve) => {
+    chrome.permissions.getAll((p) => resolve((p && p.origins) || []));
+  });
+}
+
+async function renderOrigins() {
+  const origins = await grantedOrigins();
+  const list = $('originList');
+  list.textContent = '';
+
+  if (!origins.length) {
+    const empty = document.createElement('p');
+    empty.className = 'bp-text-muted bp-text-small';
+    empty.style.margin = '0';
+    empty.textContent = 'No sites granted yet. Redactor is not running anywhere.';
+    list.appendChild(empty);
+    $('grantAll').disabled = false;
+    return;
+  }
+
+  const all = origins.some(crIsAllSites);
+  $('grantAll').disabled = all;
+
+  for (const origin of origins) {
+    const row = document.createElement('div');
+    row.className = 'bp-inline-field';
+    row.style.margin = '0 0 8px';
+
+    const label = document.createElement('span');
+    label.className = 'bp-tag bp-tag-minimal';
+    label.textContent = crPatternLabel(origin);
+    row.appendChild(label);
+
+    const remove = document.createElement('button');
+    remove.className = 'bp-button bp-button-minimal';
+    remove.textContent = 'Remove';
+    remove.addEventListener('click', () => {
+      chrome.permissions.remove({ origins: [origin] }, () => {
+        renderOrigins();
+        flashAccess('Access removed.');
+      });
+    });
+    row.appendChild(remove);
+
+    list.appendChild(row);
+  }
+}
+
+function flashAccess(message) {
+  $('accessStatus').textContent = message;
+  setTimeout(() => { $('accessStatus').textContent = ''; }, 2500);
+}
+
+$('grantAll').addEventListener('click', () => {
+  // Inside the click handler: Chrome only prompts for a request made during a
+  // user gesture.
+  chrome.permissions.request({ origins: ['*://*/*'] }, (granted) => {
+    renderOrigins();
+    if (granted) flashAccess('Granted. Open tabs need a reload.');
+  });
+});
+
+if (chrome.permissions && chrome.permissions.onAdded) {
+  chrome.permissions.onAdded.addListener(renderOrigins);
+  chrome.permissions.onRemoved.addListener(renderOrigins);
+}
+
+renderOrigins();

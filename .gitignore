@@ -1,0 +1,6 @@
+*~
+*.DS_store
+_debug
+_metadata
+dist
+**/*.swp

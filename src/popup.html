@@ -17,7 +17,34 @@
 
 <div class="bp-popup-body">
 
-  <div class="bp-section">
+  <div class="bp-section" id="accessSection">
+    <h6 class="bp-section-title">Site access</h6>
+
+    <div id="accessGranted" hidden>
+      <p class="bp-text-small" style="margin:0 0 8px">
+        Running on <span class="bp-host" id="hostGranted"></span>
+      </p>
+      <button id="revoke" class="bp-button">Remove access to this site</button>
+    </div>
+
+    <div id="accessMissing" hidden>
+      <p class="bp-text-small bp-text-muted" style="margin:0 0 8px">
+        Redactor has no access to <span class="bp-host" id="hostMissing"></span> and is doing
+        nothing here.
+      </p>
+      <button id="grant" class="bp-button bp-intent-primary">Enable on this site</button>
+    </div>
+
+    <div id="accessUnavailable" hidden>
+      <p class="bp-text-small bp-text-muted" style="margin:0">
+        This page cannot be redacted — only <code>http</code> and <code>https</code> pages can.
+      </p>
+    </div>
+  </div>
+
+  <div class="bp-divider"></div>
+
+  <div class="bp-section" id="controls">
     <label class="bp-control bp-switch">
       <input type="checkbox" id="enabled">
       <span class="bp-control-indicator"></span>
@@ -54,7 +81,7 @@
 </div>
 
 <div class="bp-footer">
-  <button id="options" class="bp-button bp-intent-primary">Phrases &amp; options</button>
+  <button id="options" class="bp-button">Phrases &amp; options</button>
 </div>
 
 <script src="config.js"></script>

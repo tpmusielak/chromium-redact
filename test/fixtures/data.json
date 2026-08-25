@@ -1,0 +1,11 @@
+{
+  "accountName": "Acme Corp",
+  "acmeCorpId": "keep-this-key",
+  "publicNote": "Acme Corp is mentioned here too",
+  "count": 2,
+  "contacts": [
+    {"name": "Acme Corp Ltd", "email": "j.smith@example.com", "id": 4711},
+    {"name": "Unrelated Inc", "email": "other@example.com", "id": 4712}
+  ],
+  "nested": {"deep": {"label": "project bluebird"}}
+}

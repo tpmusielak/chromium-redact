@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Redactor UI preview</title>
+<link rel="stylesheet" href="../src/ui.css">
+<style>
+  body { padding: 20px; }
+  .lanes { display: flex; gap: 20px; align-items: flex-start; }
+  .lane h6 { margin: 0 0 8px; }
+  iframe { border: 0; background: transparent; }
+  iframe.options { width: 760px; height: 1500px; box-shadow: var(--elevation-1); border-radius: 2px; }
+  iframe.popup { width: 320px; height: 420px; box-shadow: var(--elevation-2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<h5 class="bp-heading">Extension UI preview</h5>
+<p class="bp-text-muted bp-text-small">
+  Loads the real <code>options.html</code> and <code>popup.html</code> with the
+  <code>chrome.*</code> APIs stubbed, so the pages can be seen outside an extension install.
+</p>
+
+<div class="lanes">
+  <div class="lane">
+    <h6 class="bp-heading">Options</h6>
+    <iframe class="options" id="optionsFrame"></iframe>
+  </div>
+  <div class="lane">
+    <h6 class="bp-heading">Popup</h6>
+    <iframe class="popup" id="popupFrame"></iframe>
+  </div>
+</div>
+
+<script>
+const STUB = `
+  let granted = ['https://news.example.com/*'];
+  const store = {
+    keywords: ['Acme Corp/Contoso Ltd', 'project bluebird/project kestrel', 'internal-codename'],
+    mode: 'substitute', enabled: true, siteMode: 'blocklist', sites: ['intranet.example.com']
+  };
+  window.chrome = {
+    storage: {
+      local: {
+        get: (defaults, cb) => cb(Object.assign({}, defaults, store)),
+        set: (v, cb) => { Object.assign(store, v); cb && cb(); }
+      },
+      onChanged: { addListener() {} }
+    },
+    tabs: {
+      query: (q, cb) => cb([{ id: 1, url: 'https://news.example.com/story/1' }]),
+      reload() {}
+    },
+    permissions: {
+      getAll: (cb) => cb({ origins: granted.slice() }),
+      contains: (p, cb) => cb(p.origins.every((o) => granted.indexOf(o) !== -1)),
+      request: (p, cb) => { for (const o of p.origins) if (granted.indexOf(o) === -1) granted.push(o); cb(true); },
+      remove: (p, cb) => { granted = granted.filter((o) => p.origins.indexOf(o) === -1); cb(true); },
+      onAdded: { addListener() {} },
+      onRemoved: { addListener() {} }
+    },
+    runtime: { openOptionsPage() {} }
+  };
+`;
+
+async function mount(frameId, path, scriptName) {
+  const html = await (await fetch(path)).text();
+  const stub = '<' + 'script>' + STUB + '<' + '/script>';
+  const src = html
+    .replace('<link rel="stylesheet" href="ui.css">', '<link rel="stylesheet" href="../src/ui.css">')
+    .replace('<' + 'script src="config.js">', stub + '<' + 'script src="../src/config.js">')
+    .replace('src="' + scriptName + '"', 'src="../src/' + scriptName + '"');
+  document.getElementById(frameId).srcdoc = src;
+}
+
+mount('optionsFrame', '../src/options.html', 'options.js');
+mount('popupFrame', '../src/popup.html', 'popup.js');
+</script>
+</body>
+</html>

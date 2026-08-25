@@ -231,3 +231,38 @@ function crCompilePath(path) {
 function crCompilePaths(paths) {
   return (paths || []).map(crCompilePath).filter(Boolean);
 }
+
+/* ---------------- site access ---------------- */
+
+/* A page URL to the host permission that would cover it.
+ *
+ *   https://app.example.com/api/x?y  ->  https://app.example.com/*
+ *
+ * Deliberately the exact host, not *.example.com: the point of granting one
+ * site at a time is that it stays narrow. Match patterns cannot carry a port,
+ * so the hostname is used rather than the host. Anything that is not http(s)
+ * -- chrome://, file://, extension pages, about:blank -- has no grantable
+ * pattern and returns null. */
+function crOriginPattern(url) {
+  let parsed;
+  try {
+    parsed = new URL(String(url));
+  } catch (e) {
+    return null;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+  if (!parsed.hostname) return null;
+  return parsed.protocol + '//' + parsed.hostname + '/*';
+}
+
+/* The host part of a match pattern, for display. */
+function crPatternLabel(pattern) {
+  const p = String(pattern);
+  if (p === '*://*/*' || p === '<all_urls>') return 'All sites';
+  return p.replace(/^\*:\/\//, '').replace(/^https?:\/\//, '').replace(/\/\*$/, '');
+}
+
+function crIsAllSites(pattern) {
+  return pattern === '*://*/*' || pattern === '<all_urls>';
+}
+

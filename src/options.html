@@ -18,6 +18,25 @@
 <main class="bp-container">
 
   <div class="bp-card">
+    <h5 class="bp-heading">Site access</h5>
+
+    <div class="bp-callout bp-running-text" style="margin-bottom: 15px;" id="accessIntro">
+      <p>
+        Redactor asks for no site access when you install it, and does nothing at all until
+        you grant a site. Open the extension on a site and choose <em>Enable on this site</em>,
+        or grant every site below if you would rather not do it one at a time.
+      </p>
+    </div>
+
+    <div id="originList"></div>
+
+    <div class="bp-button-group" style="margin-top: 15px;">
+      <button id="grantAll" class="bp-button">Grant access to all sites</button>
+      <span id="accessStatus" class="bp-text-muted bp-text-small"></span>
+    </div>
+  </div>
+
+  <div class="bp-card">
     <h5 class="bp-heading">Phrases</h5>
     <div class="bp-form-group">
       <label class="bp-label" for="keywords">List</label>
@@ -155,15 +174,19 @@
 
   <div class="bp-card">
     <h5 class="bp-heading">Where it runs</h5>
+    <p class="bp-form-helper-text" style="margin-top:0">
+      A softer filter than site access above: it pauses redaction without giving up the
+      permission, so you do not have to grant the site again afterwards.
+    </p>
     <label class="bp-control bp-radio">
       <input type="radio" name="siteMode" value="all">
       <span class="bp-control-indicator"></span>
-      Every site
+      Every site I have granted
     </label>
     <label class="bp-control bp-radio">
       <input type="radio" name="siteMode" value="blocklist">
       <span class="bp-control-indicator"></span>
-      Every site except those listed below
+      Every granted site except those listed below
     </label>
     <label class="bp-control bp-radio">
       <input type="radio" name="siteMode" value="allowlist">

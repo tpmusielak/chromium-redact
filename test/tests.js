@@ -348,6 +348,31 @@ async function main() {
     check('no keywords means no pattern', r.pattern, null);
   }
 
+  /* ---------------- site access patterns ---------------- */
+  {
+    check('origin: https page', crOriginPattern('https://app.example.com/api/x?y=1'),
+      'https://app.example.com/*');
+    check('origin: http page', crOriginPattern('http://example.com/'), 'http://example.com/*');
+    check('origin: port is dropped', crOriginPattern('https://example.com:8443/a'),
+      'https://example.com/*');
+    check('origin: exact host, not a wildcard',
+      crOriginPattern('https://app.example.com/x').indexOf('*.'), -1);
+
+    // Nothing grantable for these, so the popup must offer no button.
+    check('origin: chrome page', crOriginPattern('chrome://extensions'), null);
+    check('origin: extension page', crOriginPattern('chrome-extension://abc/options.html'), null);
+    check('origin: file url', crOriginPattern('file:///C:/tmp/a.html'), null);
+    check('origin: about:blank', crOriginPattern('about:blank'), null);
+    check('origin: rubbish', crOriginPattern('not a url'), null);
+    check('origin: empty', crOriginPattern(''), null);
+
+    check('origin: label strips the pattern', crPatternLabel('https://app.example.com/*'),
+      'app.example.com');
+    check('origin: all-sites label', crPatternLabel('*://*/*'), 'All sites');
+    check('origin: all-sites detected', [crIsAllSites('*://*/*'), crIsAllSites('<all_urls>'),
+      crIsAllSites('https://example.com/*')], [true, true, false]);
+  }
+
   const summary = document.createElement('li');
   summary.className = failures ? 'fail' : 'pass';
   summary.textContent = failures ? failures + ' FAILING' : 'all tests passed';
