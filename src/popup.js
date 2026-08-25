@@ -19,8 +19,13 @@ function render() {
   $('site').checked = host ? crSiteAllowed(config, host) : false;
   $('site').disabled = !host;
   for (const el of document.querySelectorAll('input[name="mode"]')) el.checked = el.value === config.mode;
-  const n = (config.keywords || []).length;
-  $('count').textContent = n === 1 ? '1 keyword' : n + ' keywords';
+  const entries = (config.keywords || []).map(crParseEntry).filter(Boolean);
+  if (config.mode === 'substitute') {
+    const withReplacement = entries.filter((e) => e.replacement).length;
+    $('count').textContent = withReplacement + '/' + entries.length + ' with stand-ins';
+  } else {
+    $('count').textContent = entries.length === 1 ? '1 phrase' : entries.length + ' phrases';
+  }
 }
 
 async function patch(changes) {

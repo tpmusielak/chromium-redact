@@ -43,6 +43,17 @@ span[data-cr="r"] {
   user-select: none;
 }
 
+/* Substitute mode: the replacement is meant to read as ordinary page text, so it
+   carries no styling at all by default. `marked` adds a faint dotted underline
+   for cases where the reader should be able to tell what has been swapped. */
+span[data-cr="s"][data-cr-m="1"] {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  text-decoration-color: currentColor;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
 /* Replace mode, block characters: real glyphs, so no box geometry. */
 span[data-cr="r"][data-cr-f="b"] {
   display: inline;

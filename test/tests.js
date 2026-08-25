@@ -237,6 +237,111 @@ async function main() {
     r.stop();
   }
 
+  // 20. list syntax parsing
+  {
+    const p1 = crParseEntry('Acme Corp/Contoso Ltd');
+    check('parse: phrase', p1.phrase, 'Acme Corp');
+    check('parse: replacement', p1.replacement, 'Contoso Ltd');
+    check('parse: bare phrase', crParseEntry('Acme Corp').replacement, null);
+    check('parse: empty replacement counts as none', crParseEntry('Acme Corp/').replacement, null);
+    check('parse: slashes in the replacement survive', crParseEntry('a/b/c').replacement, 'b/c');
+    check('parse: escaped slash in the phrase', crParseEntry(String.raw`example.com\/jobs/our site`).phrase, 'example.com/jobs');
+    check('parse: blank line ignored', crParseEntry('   '), null);
+  }
+
+  // 21. substitute mode
+  {
+    const f = fixture('<p>Hello Acme Corp, goodbye Acme Corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute' }), f);
+    check('substitute: text swapped', f.textContent, 'Hello Contoso Ltd, goodbye Contoso Ltd');
+    check('substitute: marked as substitutions', f.querySelectorAll('span[data-cr="s"]').length, 2);
+    check('substitute: original recoverable', spanTexts(f, r), ['Acme Corp', 'Acme Corp']);
+    r.restore();
+    check('substitute: restore', f.textContent, 'Hello Acme Corp, goodbye Acme Corp');
+    r.stop();
+  }
+
+  // 22. a phrase split across elements must not repeat the replacement
+  {
+    const f = fixture('<p>x <strong>Acme</strong> <strong>Corp</strong> y</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute' }), f);
+    check('substitute: split match swapped once', f.textContent, 'x Contoso Ltd y');
+    r.restore();
+    check('substitute: split match restored', f.textContent, 'x Acme Corp y');
+    r.stop();
+  }
+
+  // 23. phrases with no replacement fall back to a box
+  {
+    const f = fixture('<p>Acme Corp and bluebird</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd', 'bluebird'], mode: 'substitute' }), f);
+    check('mixed list: one of each', [f.querySelectorAll('span[data-cr="s"]').length, f.querySelectorAll('span[data-cr="r"]').length], [1, 1]);
+    check('mixed list: substitution applied', f.textContent.indexOf('Contoso Ltd'), 0);
+    check('mixed list: bare phrase removed', f.textContent.indexOf('bluebird'), -1);
+    log('mixed list: fallback box is measured', parseFloat(f.querySelector('span[data-cr="r"]').style.width) > 10,
+        f.querySelector('span[data-cr="r"]').style.width);
+    r.stop();
+  }
+
+  // 24. capitalisation follows the text being replaced
+  {
+    const f = fixture('<p>ACME CORP / Acme Corp / acme corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/contoso ltd'], mode: 'substitute', mimicCase: true }), f);
+    check('mimic case', f.textContent, 'CONTOSO LTD / Contoso ltd / contoso ltd');
+    r.stop();
+  }
+  {
+    const f = fixture('<p>ACME CORP</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute', mimicCase: false }), f);
+    check('mimic case off', f.textContent, 'Contoso Ltd');
+    r.stop();
+  }
+
+  // 25. the marked style is opt-in
+  {
+    const f = fixture('<p>Acme Corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute', substituteStyle: 'plain' }), f);
+    check('plain leaves no marker', f.querySelectorAll('span[data-cr-m]').length, 0);
+    r.stop();
+  }
+  {
+    const f = fixture('<p>Acme Corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute', substituteStyle: 'marked' }), f);
+    check('marked adds the marker', f.querySelectorAll('span[data-cr-m="1"]').length, 1);
+    r.stop();
+  }
+
+  // 26. substitution reaches attributes and matches whitespace-split text
+  {
+    const f = fixture('<img alt="a photo of Acme Corp"><p>Acme\n   Corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute' }), f);
+    check('substitute in attributes', f.querySelector('img').getAttribute('alt'), 'a photo of Contoso Ltd');
+    check('substitute across a newline', f.querySelector('p').textContent, 'Contoso Ltd');
+    r.stop();
+  }
+
+  // 27. a replacement containing a keyword is not re-redacted
+  {
+    const f = fixture('<p>Acme Corp</p>');
+    const r = run(make({ keywords: ['Acme Corp/Acme Corporation'], mode: 'substitute' }), f);
+    await tick();
+    await tick();
+    check('no substitution feedback loop', f.textContent, 'Acme Corporation');
+    r.stop();
+  }
+
+  // 28. substitution applies to content injected later
+  {
+    const f = fixture('<div id="host2"></div>');
+    const r = run(make({ keywords: ['Acme Corp/Contoso Ltd'], mode: 'substitute' }), f);
+    const p = document.createElement('p');
+    p.textContent = 'late news from Acme Corp';
+    f.querySelector('#host2').appendChild(p);
+    await tick();
+    check('substitute on injected content', p.textContent, 'late news from Contoso Ltd');
+    r.stop();
+  }
+
   // 20. empty keyword list is a no-op
   {
     const r = make({ keywords: [] });

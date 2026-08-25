@@ -35,7 +35,9 @@ function crUpperBound(starts, value) {
 class CRRedactor {
   constructor(cfg) {
     this.cfg = cfg;
-    this.pattern = crBuildPattern(cfg);
+    const compiled = crCompile(cfg);
+    this.pattern = compiled.pattern;
+    this.replacements = compiled.replacements;
     this.active = false;
     this.roots = new Set();
     this.fontCache = new WeakMap();     // element -> {font, ls}
@@ -158,7 +160,7 @@ class CRRedactor {
       let m;
       while ((m = re.exec(data)) !== null) {
         if (!m[0].length) { re.lastIndex++; continue; }
-        out.push({ node, start: m.index, end: m.index + m[0].length, text: m[0] });
+        out.push({ node, start: m.index, end: m.index + m[0].length, text: m[0], match: m[0], first: true });
       }
       return;
     }
@@ -177,12 +179,20 @@ class CRRedactor {
       if (!m[0].length) { re.lastIndex++; continue; }
       const from = m.index;
       const to = from + m[0].length;
-      // A match may straddle nodes; emit one edit per node it touches.
+      // A match may straddle nodes; emit one edit per node it touches. `first`
+      // marks the leading segment, which is the one that carries a substitution
+      // -- the others collapse to nothing, so the phrase isn't repeated once per
+      // node it happened to be split over.
+      let first = true;
       for (let i = crUpperBound(starts, from); i < nodes.length && starts[i] < to; i++) {
         const segStart = Math.max(from, starts[i]) - starts[i];
         const segEnd = Math.min(to, starts[i] + parts[i].length) - starts[i];
         if (segEnd > segStart) {
-          out.push({ node: nodes[i], start: segStart, end: segEnd, text: parts[i].slice(segStart, segEnd) });
+          out.push({
+            node: nodes[i], start: segStart, end: segEnd,
+            text: parts[i].slice(segStart, segEnd), match: m[0], first
+          });
+          first = false;
         }
       }
     }
@@ -196,7 +206,7 @@ class CRRedactor {
       re.lastIndex = 0;
       if (!re.test(value)) continue;
       re.lastIndex = 0;
-      out.push({ el, attr, value, redacted: value.replace(re, (m) => CR_BLOCK_CHAR.repeat(m.length)) });
+      out.push({ el, attr, value, redacted: value.replace(re, (m) => this.swapText(m)) });
     }
     re.lastIndex = 0;
   }
@@ -206,9 +216,13 @@ class CRRedactor {
     const attrEdits = [];
     for (const edit of edits) (edit.attr ? attrEdits : textEdits).push(edit);
 
-    // Read phase.
-    if (this.cfg.mode === 'replace') {
-      for (const edit of textEdits) edit.width = this.measureEdit(edit);
+    // Read phase. Substitute mode only needs a measurement where it falls back
+    // to a box, i.e. for phrases the list gave no replacement for.
+    if (this.usesBars()) {
+      for (const edit of textEdits) {
+        if (this.substitutionFor(edit.match) != null) continue;
+        edit.width = this.measureEdit(edit);
+      }
     }
 
     // Write phase. Several edits on one node are applied back-to-front so the
@@ -245,7 +259,13 @@ class CRRedactor {
     const span = document.createElement('span');
     this.originals.set(span, text);
 
-    if (this.cfg.mode === 'replace') {
+    const substitution = this.substitutionFor(edit.match);
+    if (substitution != null) {
+      span.setAttribute('data-cr', 's');
+      if (this.cfg.substituteStyle === 'marked') span.setAttribute('data-cr-m', '1');
+      // Only the leading segment of a split match carries the replacement.
+      span.textContent = edit.first ? substitution : '';
+    } else if (this.usesBars()) {
       span.setAttribute('data-cr', 'r');
       this.paintBar(span, text, edit.width, parentEl);
     } else {
@@ -270,6 +290,29 @@ class CRRedactor {
         ? Math.max(2, width).toFixed(2) + 'px'
         : (text.length * 0.55).toFixed(2) + 'em';
     }
+  }
+
+  /* Modes that may need a measured-width box: replace always, substitute only
+     for phrases the list gave no replacement for. */
+  usesBars() {
+    return this.cfg.mode === 'replace' || this.cfg.mode === 'substitute';
+  }
+
+  /* The replacement for a matched phrase, or null if this mode or this list
+     entry doesn't have one. Looked up by the matched text rather than by which
+     alternative fired, so a phrase matched across a newline still resolves. */
+  substitutionFor(matched) {
+    if (this.cfg.mode !== 'substitute' || matched == null) return null;
+    const value = this.replacements.get(crMatchKey(matched, this.cfg.caseSensitive));
+    if (value === undefined) return null;
+    return this.cfg.mimicCase ? crMimicCase(matched, value) : value;
+  }
+
+  /* Plain-text redaction, for places that can't hold markup: attributes and the
+     tab title. */
+  swapText(matched) {
+    const substitution = this.substitutionFor(matched);
+    return substitution != null ? substitution : CR_BLOCK_CHAR.repeat(matched.length);
   }
 
   measureEdit(edit) {
@@ -399,7 +442,7 @@ class CRRedactor {
     re.lastIndex = 0;
     if (re.test(title)) {
       re.lastIndex = 0;
-      this.lastTitle = title.replace(re, (m) => CR_BLOCK_CHAR.repeat(m.length));
+      this.lastTitle = title.replace(re, (m) => this.swapText(m));
       document.title = this.lastTitle;
     } else {
       this.lastTitle = title;
@@ -413,7 +456,7 @@ class CRRedactor {
      wrong font. Re-measure once webfonts and stylesheets settle, and again when
      the viewport changes size under them. */
   installRemeasureHooks() {
-    if (this.cfg.mode !== 'replace') return;
+    if (!this.usesBars()) return;
     const again = () => this.remeasure();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(again).catch(() => {});
     window.addEventListener('load', again, { once: true });
@@ -425,7 +468,7 @@ class CRRedactor {
   }
 
   remeasure() {
-    if (!this.active || this.cfg.mode !== 'replace') return;
+    if (!this.active || !this.usesBars()) return;
     const pending = this.observer.takeRecords();
     if (pending.length) this.onMutations(pending);
 

@@ -7,7 +7,7 @@
 <style>
   body { font: 15px/1.6 Georgia, serif; margin: 20px; background: #fff; color: #1a1a1a; }
   h1 { font: 600 16px system-ui, sans-serif; margin: 0 0 14px; }
-  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; align-items: start; }
   .col > h2 { font: 600 11px system-ui, sans-serif; text-transform: uppercase; letter-spacing: .08em; color: #777; margin: 0 0 8px; }
   .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px 14px; }
   .card h3 { font: 700 17px/1.3 Georgia, serif; margin: 0 0 6px; }
@@ -23,13 +23,14 @@
 </head>
 <body>
 
-<h1>Same markup, four treatments — keywords: <code>Acme Corp</code>, <code>bluebird</code></h1>
+<h1>Same markup, five treatments — list: <code>Acme Corp/Contoso Ltd</code>, <code>bluebird/kestrel</code></h1>
 
 <div class="grid">
   <div class="col"><h2>Original</h2><div id="c0"></div></div>
   <div class="col"><h2>Overlay</h2><div id="c1"></div></div>
   <div class="col"><h2>Replace — bar</h2><div id="c2"></div></div>
   <div class="col"><h2>Replace — blocks</h2><div id="c3"></div></div>
+  <div class="col"><h2>Substitute</h2><div id="c4"></div></div>
 </div>
 
 <template id="tpl">
@@ -61,18 +62,19 @@ const setups = [
   null,
   { mode: 'overlay' },
   { mode: 'replace', fill: 'bar' },
-  { mode: 'replace', fill: 'blocks' }
+  { mode: 'replace', fill: 'blocks' },
+  { mode: 'substitute', substituteStyle: 'marked' }
 ];
 setups.forEach((overrides, i) => {
   const host = document.getElementById('c' + i);
   host.appendChild(tpl.content.cloneNode(true));
   if (!overrides) return;
-  const cfg = Object.assign({}, CR_DEFAULTS, { keywords: ['Acme Corp', 'bluebird'] }, overrides);
+  const cfg = Object.assign({}, CR_DEFAULTS, { keywords: ['Acme Corp/Contoso Ltd', 'bluebird/kestrel'] }, overrides);
   const r = new CRRedactor(cfg);
   r.active = true;
   r.sweep(host, null);
   r.observeRoot(host);
-  if (cfg.mode === 'replace') document.fonts.ready.then(() => r.remeasure());
+  if (r.usesBars()) document.fonts.ready.then(() => r.remeasure());
 });
 </script>
 </body>

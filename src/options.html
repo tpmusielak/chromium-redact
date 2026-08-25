@@ -11,8 +11,13 @@
 
 <section>
   <h2>Keywords</h2>
-  <p class="hint">One per line. Matching is literal — no regular expressions.</p>
-  <textarea id="keywords" rows="10" spellcheck="false" placeholder="Acme Corp&#10;project bluebird&#10;j.smith@example.com"></textarea>
+  <p class="hint">
+    One per line. Matching is literal — no regular expressions.
+    Add <code>/replacement</code> to a line to give it stand-in text for
+    <strong>substitute</strong> mode; lines without one fall back to a box.
+    Escape a slash inside the phrase itself as <code>\/</code>.
+  </p>
+  <textarea id="keywords" rows="10" spellcheck="false" placeholder="Acme Corp/Contoso Ltd&#10;project bluebird/project kestrel&#10;j.smith@example.com/a.jones@example.net&#10;internal-only-codename"></textarea>
   <p class="hint" id="count"></p>
   <label class="row"><input type="checkbox" id="wholeWord"> Whole words only <span class="hint">— “cat” won’t match “catalogue”</span></label>
   <label class="row"><input type="checkbox" id="caseSensitive"> Case sensitive</label>
@@ -33,9 +38,22 @@
     </span>
   </label>
 
+  <label class="row">
+    <input type="radio" name="mode" value="substitute">
+    <span><strong>Substitute</strong> — swap in the stand-in text from your list
+      <span class="hint">Each <code>phrase/replacement</code> line is swapped for its replacement, so the page still reads as prose. Lines with no replacement get a box instead. The line reflows to fit the new text — that is intended, since a stand-in phrase legitimately takes a different amount of space.</span>
+    </span>
+  </label>
+
   <div id="fillWrap" class="indent">
     <label class="row"><input type="radio" name="fill" value="bar"> Solid bar</label>
     <label class="row"><input type="radio" name="fill" value="blocks"> Block characters (█)</label>
+  </div>
+
+  <div id="subWrap" class="indent">
+    <label class="row"><input type="radio" name="substituteStyle" value="plain"> Indistinguishable from the surrounding text</label>
+    <label class="row"><input type="radio" name="substituteStyle" value="marked"> Faint dotted underline <span class="hint">— so you can still tell what was swapped</span></label>
+    <label class="row"><input type="checkbox" id="mimicCase"> Follow the capitalisation of the replaced text <span class="hint">— “ACME CORP” becomes “CONTOSO LTD”</span></label>
   </div>
 </section>
 
@@ -74,7 +92,9 @@
   read the original by opening DevTools, viewing source, or turning the extension off — so
   this is for screen sharing, demos and shoulder-surfing, not for withholding data from the
   person at the keyboard. Text drawn into canvas, video or images has no DOM and cannot be
-  redacted.
+  redacted. Substitute mode changes what a page appears to say, including for you — a plain
+  substitution leaves no visible sign it happened, so turn the dotted underline on if you
+  will be reading the page rather than only showing it.
 </p>
 
 <script src="config.js"></script>

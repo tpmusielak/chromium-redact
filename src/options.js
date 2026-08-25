@@ -20,8 +20,10 @@ function fill(cfg) {
   $('blockCopy').checked = cfg.blockCopy;
   $('cloak').checked = cfg.cloak;
   $('cloakTimeoutMs').value = cfg.cloakTimeoutMs;
+  $('mimicCase').checked = cfg.mimicCase;
   radio('mode', cfg.mode);
   radio('fill', cfg.fill);
+  radio('substituteStyle', cfg.substituteStyle);
   radio('siteMode', cfg.siteMode);
   syncUi();
 }
@@ -38,16 +40,29 @@ function collect() {
     blockCopy: $('blockCopy').checked,
     cloak: $('cloak').checked,
     cloakTimeoutMs: Number.isFinite(timeout) ? Math.min(10000, Math.max(100, timeout)) : CR_DEFAULTS.cloakTimeoutMs,
+    mimicCase: $('mimicCase').checked,
     mode: radioValue('mode') || CR_DEFAULTS.mode,
     fill: radioValue('fill') || CR_DEFAULTS.fill,
+    substituteStyle: radioValue('substituteStyle') || CR_DEFAULTS.substituteStyle,
     siteMode: radioValue('siteMode') || CR_DEFAULTS.siteMode
   };
 }
 
 function syncUi() {
-  $('fillWrap').style.display = radioValue('mode') === 'replace' ? '' : 'none';
-  const n = lines($('keywords').value).length;
-  $('count').textContent = n === 1 ? '1 keyword' : n + ' keywords';
+  const mode = radioValue('mode');
+  $('fillWrap').style.display = mode === 'replace' ? '' : 'none';
+  $('subWrap').style.display = mode === 'substitute' ? '' : 'none';
+
+  const entries = lines($('keywords').value).map(crParseEntry).filter(Boolean);
+  const withReplacement = entries.filter((e) => e.replacement).length;
+  const noun = entries.length === 1 ? 'phrase' : 'phrases';
+  let text = entries.length + ' ' + noun;
+  if (mode === 'substitute') {
+    text += ', ' + withReplacement + ' with a replacement';
+    const bare = entries.length - withReplacement;
+    if (bare) text += ' (' + bare + ' will be boxed instead)';
+  }
+  $('count').textContent = text;
 }
 
 function flash(message) {
