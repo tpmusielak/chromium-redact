@@ -7,22 +7,54 @@
 </head>
 <body class="popup">
 
-<h1>Redactor <span class="hint" id="count"></span></h1>
+<nav class="bp-navbar">
+  <div class="bp-navbar-inner">
+    <span class="bp-navbar-heading">Redactor</span>
+    <span class="bp-navbar-divider"></span>
+    <span class="bp-tag bp-tag-minimal" id="count"></span>
+  </div>
+</nav>
 
-<section>
-  <label class="row switch"><input type="checkbox" id="enabled"> <strong>Redaction on</strong></label>
-  <label class="row switch"><input type="checkbox" id="site"> Run on <span class="site" id="host">this site</span></label>
-</section>
+<div class="bp-popup-body">
 
-<section>
-  <label class="row"><input type="radio" name="mode" value="overlay"> Overlay <span class="hint">(paint over)</span></label>
-  <label class="row"><input type="radio" name="mode" value="replace"> Replace <span class="hint">(remove text)</span></label>
-  <label class="row"><input type="radio" name="mode" value="substitute"> Substitute <span class="hint">(swap in stand-ins)</span></label>
-</section>
+  <div class="bp-section">
+    <label class="bp-control bp-switch">
+      <input type="checkbox" id="enabled">
+      <span class="bp-control-indicator"></span>
+      Redaction on
+    </label>
+    <label class="bp-control bp-switch">
+      <input type="checkbox" id="site">
+      <span class="bp-control-indicator"></span>
+      Run on <span class="bp-host" id="host">this site</span>
+    </label>
+  </div>
 
-<div class="actions">
-  <button id="options" class="primary">Keywords &amp; options</button>
-  <span class="status" id="status"></span>
+  <div class="bp-divider"></div>
+
+  <div class="bp-section">
+    <h6 class="bp-section-title">Mode</h6>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="mode" value="overlay">
+      <span class="bp-control-indicator"></span>
+      Overlay <span class="bp-text-muted">— paint over</span>
+    </label>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="mode" value="replace">
+      <span class="bp-control-indicator"></span>
+      Replace <span class="bp-text-muted">— remove text</span>
+    </label>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="mode" value="substitute">
+      <span class="bp-control-indicator"></span>
+      Substitute <span class="bp-text-muted">— swap in stand-ins</span>
+    </label>
+  </div>
+
+</div>
+
+<div class="bp-footer">
+  <button id="options" class="bp-button bp-intent-primary">Phrases &amp; options</button>
 </div>
 
 <script src="config.js"></script>

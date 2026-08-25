@@ -7,95 +7,205 @@
 </head>
 <body class="options">
 
-<h1>Redactor</h1>
+<nav class="bp-navbar">
+  <div class="bp-navbar-inner">
+    <span class="bp-navbar-heading">Redactor</span>
+    <span class="bp-navbar-divider"></span>
+    <span class="bp-tag bp-tag-minimal" id="count"></span>
+  </div>
+</nav>
 
-<section>
-  <h2>Keywords</h2>
-  <p class="hint">
-    One per line. Matching is literal — no regular expressions.
-    Add <code>/replacement</code> to a line to give it stand-in text for
-    <strong>substitute</strong> mode; lines without one fall back to a box.
-    Escape a slash inside the phrase itself as <code>\/</code>.
-  </p>
-  <textarea id="keywords" rows="10" spellcheck="false" placeholder="Acme Corp/Contoso Ltd&#10;project bluebird/project kestrel&#10;j.smith@example.com/a.jones@example.net&#10;internal-only-codename"></textarea>
-  <p class="hint" id="count"></p>
-  <label class="row"><input type="checkbox" id="wholeWord"> Whole words only <span class="hint">— “cat” won’t match “catalogue”</span></label>
-  <label class="row"><input type="checkbox" id="caseSensitive"> Case sensitive</label>
-</section>
+<main class="bp-container">
 
-<section>
-  <h2>Mode</h2>
-  <label class="row">
-    <input type="radio" name="mode" value="overlay">
-    <span><strong>Overlay</strong> — paint over the text
-      <span class="hint">Layout is untouched and the page keeps working normally, but the text is still in the DOM: selectable, copyable, and visible in DevTools.</span>
-    </span>
-  </label>
-  <label class="row">
-    <input type="radio" name="mode" value="replace">
-    <span><strong>Replace</strong> — remove the text from the page
-      <span class="hint">The text is deleted from the DOM and a box of the same measured width takes its place. Genuinely gone, but scripts on the page that read their own text will see the redacted version.</span>
-    </span>
-  </label>
+  <div class="bp-card">
+    <h5 class="bp-heading">Phrases</h5>
+    <div class="bp-form-group">
+      <label class="bp-label" for="keywords">List</label>
+      <textarea id="keywords" class="bp-input" rows="10" spellcheck="false"
+        placeholder="Acme Corp/Contoso Ltd&#10;project bluebird/project kestrel&#10;j.smith@example.com/a.jones@example.net&#10;internal-only-codename"></textarea>
+      <div class="bp-form-helper-text">
+        One per line. Matching is literal — no regular expressions.
+        Add <code>/replacement</code> to a line to give it stand-in text for
+        substitute mode; lines without one fall back to a box.
+        Escape a slash inside the phrase itself as <code>\/</code>.
+      </div>
+    </div>
 
-  <label class="row">
-    <input type="radio" name="mode" value="substitute">
-    <span><strong>Substitute</strong> — swap in the stand-in text from your list
-      <span class="hint">Each <code>phrase/replacement</code> line is swapped for its replacement, so the page still reads as prose. Lines with no replacement get a box instead. The line reflows to fit the new text — that is intended, since a stand-in phrase legitimately takes a different amount of space.</span>
-    </span>
-  </label>
-
-  <div id="fillWrap" class="indent">
-    <label class="row"><input type="radio" name="fill" value="bar"> Solid bar</label>
-    <label class="row"><input type="radio" name="fill" value="blocks"> Block characters (█)</label>
+    <label class="bp-control bp-checkbox">
+      <input type="checkbox" id="wholeWord">
+      <span class="bp-control-indicator"></span>
+      Whole words only <span class="bp-text-muted">— “cat” won’t match “catalogue”</span>
+    </label>
+    <label class="bp-control bp-checkbox">
+      <input type="checkbox" id="caseSensitive">
+      <span class="bp-control-indicator"></span>
+      Case sensitive
+    </label>
   </div>
 
-  <div id="subWrap" class="indent">
-    <label class="row"><input type="radio" name="substituteStyle" value="plain"> Indistinguishable from the surrounding text</label>
-    <label class="row"><input type="radio" name="substituteStyle" value="marked"> Faint dotted underline <span class="hint">— so you can still tell what was swapped</span></label>
-    <label class="row"><input type="checkbox" id="mimicCase"> Follow the capitalisation of the replaced text <span class="hint">— “ACME CORP” becomes “CONTOSO LTD”</span></label>
+  <div class="bp-card">
+    <h5 class="bp-heading">Mode</h5>
+
+    <label class="bp-control bp-radio bp-control-rich">
+      <input type="radio" name="mode" value="overlay">
+      <span class="bp-control-indicator"></span>
+      <span class="bp-control-label">Overlay — paint over the text</span>
+      <div class="bp-form-helper-text">
+        Layout is untouched and the page keeps working normally, but the text is still in
+        the DOM: selectable, copyable, and visible in DevTools.
+      </div>
+    </label>
+
+    <label class="bp-control bp-radio bp-control-rich">
+      <input type="radio" name="mode" value="replace">
+      <span class="bp-control-indicator"></span>
+      <span class="bp-control-label">Replace — remove the text from the page</span>
+      <div class="bp-form-helper-text">
+        The text is deleted from the DOM and a box of the same measured width takes its
+        place. Genuinely gone, but scripts on the page that read their own text will see
+        the redacted version.
+      </div>
+    </label>
+
+    <div id="fillWrap" class="bp-control-group">
+      <label class="bp-control bp-radio">
+        <input type="radio" name="fill" value="bar">
+        <span class="bp-control-indicator"></span>
+        Solid bar
+      </label>
+      <label class="bp-control bp-radio">
+        <input type="radio" name="fill" value="blocks">
+        <span class="bp-control-indicator"></span>
+        Block characters (█)
+      </label>
+    </div>
+
+    <label class="bp-control bp-radio bp-control-rich">
+      <input type="radio" name="mode" value="substitute">
+      <span class="bp-control-indicator"></span>
+      <span class="bp-control-label">Substitute — swap in the stand-in text from your list</span>
+      <div class="bp-form-helper-text">
+        Each <code>phrase/replacement</code> line is swapped for its replacement, so the page
+        still reads as prose. Lines with no replacement get a box instead. The line reflows to
+        fit the new text — that is intended, since a stand-in phrase legitimately takes a
+        different amount of space.
+      </div>
+    </label>
+
+    <div id="subWrap" class="bp-control-group">
+      <label class="bp-control bp-radio">
+        <input type="radio" name="substituteStyle" value="plain">
+        <span class="bp-control-indicator"></span>
+        Indistinguishable from the surrounding text
+      </label>
+      <label class="bp-control bp-radio">
+        <input type="radio" name="substituteStyle" value="marked">
+        <span class="bp-control-indicator"></span>
+        Faint dotted underline <span class="bp-text-muted">— so you can still tell what was swapped</span>
+      </label>
+      <label class="bp-control bp-checkbox">
+        <input type="checkbox" id="mimicCase">
+        <span class="bp-control-indicator"></span>
+        Follow the capitalisation of the replaced text <span class="bp-text-muted">— “ACME CORP” becomes “CONTOSO LTD”</span>
+      </label>
+    </div>
   </div>
-</section>
 
-<section>
-  <h2>Coverage</h2>
-  <label class="row"><input type="checkbox" id="redactTitle"> Page title (the browser tab)</label>
-  <label class="row"><input type="checkbox" id="redactAttributes"> Tooltips and labels <span class="hint">— title, alt, placeholder, aria-label</span></label>
-  <label class="row"><input type="checkbox" id="blockCopy"> Overlay mode: block selecting the hidden text</label>
-</section>
+  <div class="bp-card">
+    <h5 class="bp-heading">Coverage</h5>
+    <label class="bp-control bp-checkbox">
+      <input type="checkbox" id="redactTitle">
+      <span class="bp-control-indicator"></span>
+      Page title <span class="bp-text-muted">— the browser tab</span>
+    </label>
+    <label class="bp-control bp-checkbox">
+      <input type="checkbox" id="redactAttributes">
+      <span class="bp-control-indicator"></span>
+      Tooltips and labels <span class="bp-text-muted">— title, alt, placeholder, aria-label</span>
+    </label>
+    <label class="bp-control bp-checkbox">
+      <input type="checkbox" id="blockCopy">
+      <span class="bp-control-indicator"></span>
+      Overlay mode: block selecting the hidden text
+    </label>
+  </div>
 
-<section>
-  <h2>Loading</h2>
-  <label class="row"><input type="checkbox" id="cloak"> Hide the page until the first pass finishes <span class="hint">— prevents any flash of unredacted text; usually costs a couple of milliseconds</span></label>
-  <label class="row">Give up hiding after
-    <input type="number" id="cloakTimeoutMs" min="100" max="10000" step="100"> ms
-  </label>
-</section>
+  <div class="bp-card">
+    <h5 class="bp-heading">Loading</h5>
+    <label class="bp-control bp-checkbox bp-control-rich">
+      <input type="checkbox" id="cloak">
+      <span class="bp-control-indicator"></span>
+      <span class="bp-control-label">Hide the page until the first pass finishes</span>
+      <div class="bp-form-helper-text">
+        Prevents any flash of unredacted text. Usually costs a couple of milliseconds.
+      </div>
+    </label>
 
-<section>
-  <h2>Where it runs</h2>
-  <label class="row"><input type="radio" name="siteMode" value="all"> Every site</label>
-  <label class="row"><input type="radio" name="siteMode" value="blocklist"> Every site except those listed below</label>
-  <label class="row"><input type="radio" name="siteMode" value="allowlist"> Only the sites listed below</label>
-  <textarea id="sites" rows="4" spellcheck="false" placeholder="example.com&#10;mail.google.com"></textarea>
-  <p class="hint">One hostname per line. Subdomains are included.</p>
-</section>
+    <div class="bp-form-group">
+      <label class="bp-label" for="cloakTimeoutMs">Give up hiding after</label>
+      <div class="bp-inline-field">
+        <input type="number" id="cloakTimeoutMs" class="bp-input bp-input-small" min="100" max="10000" step="100">
+        <span class="bp-text-muted">milliseconds</span>
+      </div>
+      <div class="bp-form-helper-text">
+        Failsafe, so a bug or a hung storage read can never leave a page blank.
+      </div>
+    </div>
+  </div>
 
-<div class="actions">
-  <button id="save" class="primary">Save</button>
-  <button id="reset">Reset to defaults</button>
-  <span id="status" class="status"></span>
-</div>
+  <div class="bp-card">
+    <h5 class="bp-heading">Where it runs</h5>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="siteMode" value="all">
+      <span class="bp-control-indicator"></span>
+      Every site
+    </label>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="siteMode" value="blocklist">
+      <span class="bp-control-indicator"></span>
+      Every site except those listed below
+    </label>
+    <label class="bp-control bp-radio">
+      <input type="radio" name="siteMode" value="allowlist">
+      <span class="bp-control-indicator"></span>
+      Only the sites listed below
+    </label>
 
-<p class="hint footnote">
-  Redaction happens in the page you are looking at. Anyone with access to this browser can
-  read the original by opening DevTools, viewing source, or turning the extension off — so
-  this is for screen sharing, demos and shoulder-surfing, not for withholding data from the
-  person at the keyboard. Text drawn into canvas, video or images has no DOM and cannot be
-  redacted. Substitute mode changes what a page appears to say, including for you — a plain
-  substitution leaves no visible sign it happened, so turn the dotted underline on if you
-  will be reading the page rather than only showing it.
-</p>
+    <div class="bp-divider"></div>
+
+    <div class="bp-form-group">
+      <label class="bp-label" for="sites">Sites</label>
+      <textarea id="sites" class="bp-input" rows="4" spellcheck="false"
+        placeholder="example.com&#10;mail.google.com"></textarea>
+      <div class="bp-form-helper-text">One hostname per line. Subdomains are included.</div>
+    </div>
+  </div>
+
+  <div class="bp-card">
+    <div class="bp-button-group">
+      <button id="save" class="bp-button bp-intent-primary">Save</button>
+      <button id="reset" class="bp-button">Reset to defaults</button>
+      <span id="status" class="bp-text-muted bp-text-small"></span>
+    </div>
+  </div>
+
+  <div class="bp-callout bp-intent-warning bp-running-text">
+    <h6 class="bp-heading">What this does and does not do</h6>
+    <p>
+      Redaction happens in the page you are looking at. Anyone with access to this browser can
+      read the original by opening DevTools, viewing source, or turning the extension off — so
+      this is for screen sharing, demos and shoulder-surfing, not for withholding data from the
+      person at the keyboard. Text drawn into canvas, video or images has no DOM and cannot be
+      redacted.
+    </p>
+    <p>
+      Substitute mode changes what a page appears to say, including for you. A plain
+      substitution leaves no visible sign it happened, so turn the dotted underline on if you
+      will be reading the page rather than only showing it.
+    </p>
+  </div>
+
+</main>
 
 <script src="config.js"></script>
 <script src="options.js"></script>

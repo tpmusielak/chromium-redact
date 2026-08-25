@@ -7,7 +7,7 @@ A Chrome (MV3) extension that hides a list of phrases on every page you visit, a
 1. Open `chrome://extensions`
 2. Turn on **Developer mode**
 3. **Load unpacked** → select this folder
-4. Click the extension icon → **Keywords & options**, and add some phrases
+4. Click the extension icon → **Phrases & options**, and add some phrases
 
 ## The list
 
@@ -87,6 +87,25 @@ The techniques that get there:
 
 Boxes created before stylesheets and webfonts settled were measured against the wrong font, so widths are recomputed on `document.fonts.ready`, on `load`, and on a debounced `resize`.
 
+## Styling
+
+The settings page and popup follow **BlueprintJS**: the Blueprint 5 core palette, the 10px
+grid, 30px controls, 2px radii, the elevation shadows, and the real control anatomy
+(gradient-sheened indicators, radial-gradient radio dots, 28x16 switches, intent-primary
+buttons). Both themes are covered -- light on `#f6f7f9`, dark on `#252a31` -- switched by
+`prefers-color-scheme`.
+
+It is hand-rolled in `src/ui.css` rather than vendored. The extension CSP blocks CDN
+stylesheets, so Blueprint would have to be bundled, and the full `blueprint.css` is ~250KB
+for a settings page and a popup that between them use a dozen components. The tokens live in
+CSS custom properties, so swapping in the real stylesheet later is a matter of renaming
+classes, not rewriting layout.
+
+The in-page redaction marks in `src/redact.css` are deliberately **not** Blueprint-styled.
+They have to blend into whatever site you are looking at, which is why bars take their colour
+from `currentColor` rather than from a fixed palette -- a Blueprint blue-gray box would look
+like a rendering fault on a page that isn't a Blueprint app.
+
 ## Limitations
 
 - **Not a security boundary.** Anyone at this browser can read the original via DevTools, view-source, the network tab, or by disabling the extension. This is for screen sharing, demos, and shoulder-surfing — not for withholding data from the person at the keyboard.
@@ -106,9 +125,10 @@ src/content.js       per-frame bootstrap and the cloak ordering
 src/redact.css       cloak rule + redaction styles, injected at document_start
 src/options.html|js  full settings
 src/popup.html|js    quick toggles: on/off, per-site, mode
-src/ui.css           shared styling for options and popup
-test/harness.html    56 engine tests — serve the folder and open it
+src/ui.css           Blueprint-flavoured styling for options and popup
+test/harness.html    57 engine tests — serve the folder and open it
 test/demo.html       side-by-side of all five treatments
+test/ui-preview.html the options page and popup with chrome.* stubbed
 ```
 
 Phrases are stored in `chrome.storage.local`, not `.sync`, deliberately: the list *is* the sensitive data, and syncing would copy it to Google's servers. One line in `src/config.js` changes that if you'd rather have cross-device sync.

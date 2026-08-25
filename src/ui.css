@@ -1,96 +1,527 @@
+/* Blueprint-flavoured styling for the extension's own pages.
+ *
+ * Hand-rolled rather than vendored: the extension CSP blocks CDN stylesheets,
+ * and the full blueprint.css is ~250KB for a settings page and a popup that use
+ * a dozen components. The palette, metrics (10px grid, 30px controls, 2px
+ * radius), elevations and control anatomy follow Blueprint 5 so the result sits
+ * next to a real Blueprint app without looking off.
+ */
+
 :root {
-  color-scheme: light dark;
-  --bg: #ffffff;
-  --fg: #1c1c1e;
-  --muted: #6b6b70;
-  --line: #dcdce0;
-  --field: #ffffff;
-  --accent: #1a1a1a;
-  --accent-fg: #ffffff;
+  /* Blueprint core palette */
+  --black: #111418;
+  --dark-gray1: #1c2127;
+  --dark-gray2: #252a31;
+  --dark-gray3: #2f343c;
+  --dark-gray4: #383e47;
+  --dark-gray5: #404854;
+  --gray1: #5f6b7c;
+  --gray2: #738091;
+  --gray3: #8f99a8;
+  --gray4: #abb3bf;
+  --gray5: #c5cbd3;
+  --light-gray1: #d3d8de;
+  --light-gray2: #dce0e5;
+  --light-gray3: #e5e8eb;
+  --light-gray4: #edeff2;
+  --light-gray5: #f6f7f9;
+  --white: #ffffff;
+
+  --blue1: #184a90;
+  --blue2: #215db0;
+  --blue3: #2d72d2;
+  --blue5: #8abbff;
+  --orange1: #77450d;
+  --orange3: #c87619;
+  --orange5: #fbb360;
+
+  /* Semantic, light theme */
+  --app-bg: var(--light-gray5);
+  --surface: var(--white);
+  --surface-alt: var(--light-gray4);
+  --text: var(--dark-gray1);
+  --heading: var(--black);
+  --text-muted: var(--gray1);
+  --divider: rgba(17, 20, 24, 0.15);
+
+  --elevation-0: 0 0 0 1px rgba(17, 20, 24, 0.15);
+  --elevation-1: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2);
+  --elevation-2: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2),
+                 0 2px 6px rgba(17, 20, 24, 0.2);
+
+  --button-bg: var(--light-gray5);
+  --button-bg-hover: var(--light-gray4);
+  --button-bg-active: var(--light-gray2);
+  --button-sheen: linear-gradient(180deg, hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0));
+  --button-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 2px rgba(17, 20, 24, 0.1);
+  --button-shadow-active: inset 0 0 0 1px rgba(17, 20, 24, 0.2), inset 0 1px 2px rgba(17, 20, 24, 0.2);
+
+  --input-bg: var(--white);
+  --input-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2), inset 0 1px 1px rgba(17, 20, 24, 0.3);
+  --input-shadow-focus: inset 0 0 0 1px var(--blue3), 0 0 0 2px rgba(45, 114, 210, 0.3);
+
+  --indicator-bg: var(--light-gray5);
+  --indicator-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2), inset 0 -1px 0 rgba(17, 20, 24, 0.1);
+  --indicator-shadow-checked: inset 0 0 0 1px rgba(17, 20, 24, 0.4), inset 0 -1px 0 rgba(17, 20, 24, 0.2);
+  --switch-track: rgba(95, 107, 124, 0.5);
+
+  --callout-bg: rgba(143, 153, 168, 0.15);
+  --callout-warning-bg: rgba(200, 118, 25, 0.15);
+  --callout-warning-heading: var(--orange1);
+  --tag-minimal-bg: rgba(143, 153, 168, 0.2);
+  --tag-minimal-fg: var(--dark-gray1);
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1e1e20;
-    --fg: #ececee;
-    --muted: #9a9aa0;
-    --line: #3a3a3e;
-    --field: #141416;
-    --accent: #ececee;
-    --accent-fg: #1e1e20;
+    --app-bg: var(--dark-gray2);
+    --surface: var(--dark-gray3);
+    --surface-alt: var(--dark-gray4);
+    --text: var(--light-gray5);
+    --heading: var(--white);
+    --text-muted: var(--gray4);
+    --divider: rgba(255, 255, 255, 0.2);
+
+    --elevation-0: 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 1px rgba(17, 20, 24, 0.4);
+    --elevation-1: 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 1px rgba(17, 20, 24, 0.4);
+    --elevation-2: 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 1px rgba(17, 20, 24, 0.4),
+                   0 2px 6px rgba(17, 20, 24, 0.4);
+
+    --button-bg: var(--dark-gray4);
+    --button-bg-hover: var(--dark-gray3);
+    --button-bg-active: var(--dark-gray1);
+    --button-sheen: linear-gradient(180deg, hsla(0, 0%, 100%, 0.05), hsla(0, 0%, 100%, 0));
+    --button-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.4), 0 1px 2px rgba(17, 20, 24, 0.4);
+    --button-shadow-active: inset 0 0 0 1px rgba(17, 20, 24, 0.4), inset 0 1px 2px rgba(17, 20, 24, 0.4);
+
+    --input-bg: rgba(17, 20, 24, 0.3);
+    --input-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.4), inset 0 1px 1px rgba(17, 20, 24, 0.4);
+    --input-shadow-focus: inset 0 0 0 1px var(--blue3), 0 0 0 2px rgba(45, 114, 210, 0.3);
+
+    --indicator-bg: rgba(143, 153, 168, 0.2);
+    --indicator-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.4), inset 0 -1px 0 rgba(17, 20, 24, 0.2);
+    --indicator-shadow-checked: inset 0 0 0 1px rgba(17, 20, 24, 0.4), inset 0 -1px 0 rgba(17, 20, 24, 0.2);
+    --switch-track: rgba(143, 153, 168, 0.5);
+
+    --callout-warning-heading: var(--orange5);
+    --tag-minimal-bg: rgba(143, 153, 168, 0.2);
+    --tag-minimal-fg: var(--light-gray5);
   }
 }
 
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  padding: 24px;
-  background: var(--bg);
-  color: var(--fg);
-  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--app-bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.28581;
+  letter-spacing: 0;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1 { font-size: 20px; margin: 0 0 20px; }
-h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; }
+/* ---------------- typography ---------------- */
 
-section {
-  border-top: 1px solid var(--line);
-  padding: 18px 0;
+.bp-heading {
+  margin: 0 0 10px;
+  color: var(--heading);
+  font-weight: 600;
+  line-height: 1.28581;
+}
+h5.bp-heading { font-size: 16px; }
+h6.bp-heading { font-size: 14px; }
+
+.bp-text-muted { color: var(--text-muted); }
+.bp-text-small { font-size: 12px; }
+
+.bp-running-text p { margin: 0 0 10px; }
+.bp-running-text p:last-child { margin-bottom: 0; }
+
+code, .bp-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(143, 153, 168, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2);
+  border-radius: 2px;
+  padding: 2px 5px;
+  color: var(--text);
 }
 
-.hint { color: var(--muted); font-size: 12px; margin: 4px 0; }
-.hint.footnote { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 8px; }
-
-label.row {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  margin: 8px 0;
+.bp-divider {
+  border-bottom: 1px solid var(--divider);
+  margin: 20px 0;
 }
-label.row .hint { display: block; margin: 2px 0 0; }
-.indent { margin-left: 26px; }
 
-textarea, input[type="number"], input[type="text"] {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--field);
-  color: var(--fg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font: 13px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+/* ---------------- structure ---------------- */
+
+.bp-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 50px;
+  background: var(--surface);
+  box-shadow: var(--elevation-0);
 }
-input[type="number"] { width: 90px; }
 
-.actions {
+.bp-navbar-inner {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  height: 50px;
+  margin: 0 auto;
+  padding: 0 15px;
+  max-width: 720px;
 }
 
-button {
-  background: transparent;
-  color: var(--fg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 7px 14px;
-  font: inherit;
+.bp-navbar-heading {
+  color: var(--heading);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.bp-navbar-divider {
+  flex: 1 1 auto;
+}
+
+.bp-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 15px 40px;
+}
+
+.bp-card {
+  background: var(--surface);
+  border-radius: 2px;
+  box-shadow: var(--elevation-0);
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+/* ---------------- form groups ---------------- */
+
+.bp-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+.bp-form-group:last-child { margin-bottom: 0; }
+
+.bp-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: var(--heading);
+}
+
+.bp-form-helper-text {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.bp-form-helper-text code { font-size: 11px; }
+
+/* ---------------- inputs ---------------- */
+
+.bp-input {
+  appearance: none;
+  border: none;
+  border-radius: 2px;
+  background: var(--input-bg);
+  box-shadow: var(--input-shadow);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+  vertical-align: middle;
+  transition: box-shadow 100ms cubic-bezier(0.4, 1, 0.75, 0.9);
+  width: 100%;
+}
+
+.bp-input:focus,
+.bp-input:focus-visible {
+  outline: none;
+  box-shadow: var(--input-shadow-focus);
+}
+
+.bp-input::placeholder { color: var(--gray3); opacity: 1; }
+
+textarea.bp-input {
+  height: auto;
+  line-height: 1.5;
+  padding: 8px 10px;
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.bp-input-small {
+  width: 80px;
+  text-align: right;
+}
+
+.bp-inline-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------------- controls: checkbox, radio, switch ---------------- */
+
+.bp-control {
+  display: block;
+  position: relative;
+  margin: 0 0 10px;
+  padding-left: 26px;
   cursor: pointer;
+  line-height: 16px;
+  text-transform: none;
 }
-button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-button:hover { opacity: 0.85; }
+.bp-control:last-child { margin-bottom: 0; }
 
-.status { color: var(--muted); font-size: 12px; }
+.bp-control input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0;
+  margin: 0;
+}
 
-/* Options page reads better constrained. */
-body.options { max-width: 640px; }
+.bp-control-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: var(--indicator-bg);
+  background-image: var(--button-sheen);
+  background-clip: padding-box;
+  box-shadow: var(--indicator-shadow);
+  user-select: none;
+}
 
-/* Popup */
-body.popup { width: 300px; padding: 14px 16px; }
-body.popup h1 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; }
-body.popup section { border: 0; padding: 10px 0; }
-body.popup .actions { border: 0; padding-top: 10px; }
-body.popup .site { font: 12px ui-monospace, monospace; color: var(--muted); }
+.bp-control:hover .bp-control-indicator { background-color: var(--button-bg-hover); }
 
-.switch { display: flex; align-items: center; gap: 8px; }
+.bp-control input:checked ~ .bp-control-indicator {
+  background-color: var(--blue3);
+  background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0));
+  box-shadow: var(--indicator-shadow-checked);
+}
+.bp-control:hover input:checked ~ .bp-control-indicator { background-color: var(--blue2); }
+
+.bp-control input:focus-visible ~ .bp-control-indicator {
+  outline: 2px solid rgba(45, 114, 210, 0.6);
+  outline-offset: 2px;
+}
+
+/* Checkbox tick */
+.bp-checkbox input:checked ~ .bp-control-indicator::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Radio dot */
+.bp-radio .bp-control-indicator { border-radius: 50%; }
+.bp-radio input:checked ~ .bp-control-indicator {
+  background-image: radial-gradient(var(--white), var(--white) 28%, transparent 32%);
+}
+
+/* Switch */
+.bp-switch { padding-left: 38px; }
+.bp-switch .bp-control-indicator {
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background-color: var(--switch-track);
+  background-image: none;
+  box-shadow: none;
+  transition: background-color 100ms cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.bp-switch .bp-control-indicator::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1px 1px rgba(17, 20, 24, 0.3);
+  transition: left 100ms cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.bp-switch input:checked ~ .bp-control-indicator { background-color: var(--blue3); }
+.bp-switch input:checked ~ .bp-control-indicator::before { left: 13px; }
+.bp-switch:hover .bp-control-indicator { background-color: var(--gray2); }
+.bp-switch:hover input:checked ~ .bp-control-indicator { background-color: var(--blue2); }
+
+/* Disabled */
+.bp-control:has(input:disabled) { color: var(--text-muted); cursor: not-allowed; }
+.bp-control input:disabled ~ .bp-control-indicator { opacity: 0.5; }
+
+/* A control whose label carries a secondary description underneath. */
+.bp-control-rich { line-height: 1.28581; margin-bottom: 12px; }
+.bp-control-rich .bp-control-label { font-weight: 600; color: var(--heading); }
+.bp-control-rich .bp-form-helper-text { margin-top: 3px; }
+
+.bp-control-group {
+  margin: 10px 0 0 26px;
+  padding-left: 12px;
+  border-left: 1px solid var(--divider);
+}
+
+/* ---------------- buttons ---------------- */
+
+.bp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 2px;
+  background-color: var(--button-bg);
+  background-image: var(--button-sheen);
+  box-shadow: var(--button-shadow);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bp-button:hover {
+  background-color: var(--button-bg-hover);
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 2px rgba(17, 20, 24, 0.2);
+}
+
+.bp-button:active {
+  background-color: var(--button-bg-active);
+  background-image: none;
+  box-shadow: var(--button-shadow-active);
+}
+
+.bp-button:focus-visible {
+  outline: 2px solid rgba(45, 114, 210, 0.6);
+  outline-offset: 2px;
+}
+
+.bp-intent-primary {
+  background-color: var(--blue3);
+  background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0));
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.2), 0 1px 2px rgba(17, 20, 24, 0.2);
+  color: var(--white);
+}
+.bp-intent-primary:hover { background-color: var(--blue2); }
+.bp-intent-primary:active { background-color: var(--blue1); background-image: none; }
+
+.bp-button-minimal {
+  background: none;
+  box-shadow: none;
+  color: var(--text);
+}
+.bp-button-minimal:hover {
+  background: rgba(143, 153, 168, 0.15);
+  box-shadow: none;
+}
+.bp-button-minimal:active { background: rgba(143, 153, 168, 0.3); box-shadow: none; }
+
+.bp-button-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------------- callout & tag ---------------- */
+
+.bp-callout {
+  background: var(--callout-bg);
+  border-radius: 2px;
+  padding: 10px 12px 9px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.bp-callout .bp-heading { margin-bottom: 5px; font-size: 14px; }
+.bp-callout p { margin: 0 0 10px; }
+.bp-callout p:last-child { margin-bottom: 0; }
+
+.bp-callout.bp-intent-warning { background: var(--callout-warning-bg); }
+.bp-callout.bp-intent-warning .bp-heading { color: var(--callout-warning-heading); }
+
+.bp-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--gray1);
+  color: var(--white);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+.bp-tag-minimal { background: var(--tag-minimal-bg); color: var(--tag-minimal-fg); }
+
+/* ---------------- popup ---------------- */
+
+body.popup {
+  width: 320px;
+  background: var(--surface);
+}
+
+body.popup .bp-navbar-inner { padding: 0 15px; max-width: none; }
+
+body.popup .bp-popup-body { padding: 15px; }
+
+body.popup .bp-section { margin-bottom: 15px; }
+body.popup .bp-section:last-child { margin-bottom: 0; }
+
+body.popup .bp-section-title {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+body.popup .bp-host {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 190px;
+  vertical-align: bottom;
+}
+
+body.popup .bp-footer {
+  border-top: 1px solid var(--divider);
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
