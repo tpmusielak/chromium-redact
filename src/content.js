@@ -106,7 +106,7 @@
       run(cfg);
     })
     .catch((err) => {
-      console.error('[Redactor]', err);
+      console.error('[Keyword Redact]', err);
       briefNetworkHook(null);   // release the network hook's hold
     })
     .finally(() => {

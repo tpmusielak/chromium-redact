@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Keyword Redact</title>
+<meta name="description" content="Privacy policy for the Keyword Redact browser extension. No data is collected or transmitted.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='26' fill='%232d72d2'/%3E%3Crect x='20' y='28' width='88' height='14' rx='7' fill='white'/%3E%3Crect x='20' y='54' width='88' height='20' rx='4' fill='%23111418'/%3E%3Crect x='20' y='86' width='56' height='14' rx='7' fill='white'/%3E%3C/svg%3E">
+<style>
+/* Palette follows Blueprint 5, matching the extension's own pages (src/ui.css)
+   so the policy page reads as part of the same product. Self-contained: no
+   external stylesheet, no webfont, nothing to load from a third party --
+   which would rather undercut the point of the page. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1c2127;
+  --muted: #5f6b7c;
+  --rule: #dce0e5;
+  --accent: #2d72d2;
+  --code-bg: #edeff2;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c2127;
+    --surface: #252a31;
+    --text: #f6f7f9;
+    --muted: #abb3bf;
+    --rule: #383e47;
+    --accent: #8abbff;
+    --code-bg: #2f343c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 40px 20px 80px;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 40px;
+}
+@media (max-width: 640px) { body { padding: 16px 12px 48px; } main { padding: 24px 20px; } }
+h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 1.05rem; margin: 34px 0 10px; padding-top: 18px; border-top: 1px solid var(--rule); }
+h2:first-of-type { border-top: 0; padding-top: 0; }
+p, ul { margin: 0 0 14px; }
+ul { padding-left: 22px; }
+li { margin-bottom: 5px; }
+.updated { color: var(--muted); font-size: 0.875rem; margin: 0 0 8px; }
+.lede { font-size: 1.05rem; }
+code {
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font: 0.875em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+a { color: var(--accent); }
+footer { max-width: 44rem; margin: 20px auto 0; color: var(--muted); font-size: 0.8125rem; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Privacy Policy</h1>
+<p class="updated">Keyword Redact browser extension · Last updated 1 September 2026</p>
+
+<h2>Summary</h2>
+<p class="lede">Keyword Redact collects nothing, transmits nothing, and contacts no server. There is no analytics, no telemetry, no crash reporting, and no third-party service of any kind. Everything the extension does happens locally in your browser.</p>
+
+<h2>What the extension stores</h2>
+<p>The extension saves only your own settings:</p>
+<ul>
+  <li>your keyword list, including any replacement words you configure</li>
+  <li>your redaction mode and display preferences</li>
+  <li>the list of sites you have granted access to</li>
+  <li>your optional network-redaction URL patterns and JSON paths</li>
+</ul>
+<p>This is stored using <code>chrome.storage.local</code>, which keeps the data on your machine. It is deliberately <strong>not</strong> stored with <code>chrome.storage.sync</code>, because syncing would copy your keyword list — by definition, the words you are trying to keep off your screen — to Google's servers. That choice is documented in the source at <code>src/config.js</code>.</p>
+
+<h2>What the extension does with page content</h2>
+<p>To redact keywords, the extension reads the text of pages on sites you have granted access to. That text is examined in memory, in your browser, only to find and cover matches. It is never stored, never logged, and never sent anywhere. Nothing about the pages you visit leaves your device.</p>
+<p>If you enable the optional network-redaction feature, the extension also inspects responses from URLs matching patterns you supply, for the same purpose and under the same terms. This feature is off by default and does nothing until you both enable it and provide URL patterns.</p>
+
+<h2>Site access</h2>
+<p>The extension requests no site access when you install it. The install prompt asks for no host permissions at all, and the extension is inert until you explicitly grant a site from its popup. You grant access one origin at a time, and you can revoke it at any time from Chrome's extension settings — revoking takes effect immediately.</p>
+
+<h2>Data sharing</h2>
+<p>None. No data is sold, transferred, or shared with anyone, for any purpose.</p>
+
+<h2>Data retention</h2>
+<p>Your settings persist locally until you change them or uninstall the extension. Uninstalling removes them along with the extension. You can clear your keyword list at any time from the options page.</p>
+
+<h2>Remote code</h2>
+<p>The extension executes no remotely hosted code. All code ships inside the package and is reviewable in the public source repository.</p>
+
+<h2>Changes to this policy</h2>
+<p>Any change will be published at this URL with an updated date above.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: <a href="mailto:extensions@tpm.cloud">extensions@tpm.cloud</a></p>
+
+</main>
+<footer>
+  Source code: <a href="https://github.com/tpmusielak/chromium-redact">github.com/tpmusielak/chromium-redact</a>
+</footer>
+</body>
+</html>

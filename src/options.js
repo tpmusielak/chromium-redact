@@ -121,7 +121,7 @@ async function renderOrigins() {
     const empty = document.createElement('p');
     empty.className = 'bp-text-muted bp-text-small';
     empty.style.margin = '0';
-    empty.textContent = 'No sites granted yet. Redactor is not running anywhere.';
+    empty.textContent = 'No sites granted yet. Keyword Redact is not running anywhere.';
     list.appendChild(empty);
     $('grantAll').disabled = false;
     return;

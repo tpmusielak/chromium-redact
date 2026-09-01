@@ -136,7 +136,7 @@ function crBuildPatternFrom(phrases, cfg) {
   try {
     return new RegExp(parts.join('|'), cfg.caseSensitive ? 'g' : 'gi');
   } catch (e) {
-    console.error('[Redactor] could not build keyword pattern', e);
+    console.error('[Keyword Redact] could not build keyword pattern', e);
     return null;
   }
 }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Master artwork for the extension icons. The PNGs beside this file are
+       generated from it by tools/make-icons.sh; edit here, never the PNGs.
+
+       Three lines of text with the middle one struck out by a solid black bar.
+       Deliberately only three shapes: at 16px in the toolbar anything finer
+       turns to mush. Palette is Blueprint 5, matching src/ui.css. -->
+  <rect width="128" height="128" rx="26" fill="#2d72d2"/>
+  <rect x="20" y="28" width="88" height="14" rx="7" fill="#ffffff" opacity="0.92"/>
+  <rect x="20" y="54" width="88" height="20" rx="4" fill="#111418"/>
+  <rect x="20" y="86" width="56" height="14" rx="7" fill="#ffffff" opacity="0.92"/>
+</svg>

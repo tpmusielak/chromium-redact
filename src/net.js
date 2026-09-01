@@ -172,7 +172,7 @@
 
   const holdTimer = setTimeout(() => {
     if (ready) return;
-    console.warn('[Redactor] network hook: no configuration after '
+    console.warn('[Keyword Redact] network hook: no configuration after '
       + HOLD_TIMEOUT_MS + 'ms; passing traffic through unredacted.');
     release();
   }, HOLD_TIMEOUT_MS);
@@ -206,7 +206,7 @@
         caseSensitive = !!brief.caseSensitive;
       }
     } catch (e) {
-      console.error('[Redactor] network hook: unusable brief; passing traffic through.', e);
+      console.error('[Keyword Redact] network hook: unusable brief; passing traffic through.', e);
       standDown();
     }
     clearTimeout(holdTimer);

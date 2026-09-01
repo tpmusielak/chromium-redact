@@ -1,4 +1,4 @@
-# Redactor
+# Keyword Redact
 
 A Chrome (MV3) extension that hides a list of phrases on every page you visit, as the page renders.
 

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Redactor",
+  "name": "Keyword Redact",
   "version": "0.1.0",
   "description": "Redacts a list of keywords from any page as it renders.",
   "minimum_chrome_version": "111",
@@ -19,8 +19,19 @@
     "page": "src/options.html",
     "open_in_tab": true
   },
+  "icons": {
+    "16": "src/icons/16.png",
+    "32": "src/icons/32.png",
+    "48": "src/icons/48.png",
+    "128": "src/icons/128.png"
+  },
   "action": {
     "default_popup": "src/popup.html",
-    "default_title": "Redactor"
+    "default_title": "Keyword Redact",
+    "default_icon": {
+      "16": "src/icons/16.png",
+      "32": "src/icons/32.png",
+      "48": "src/icons/48.png"
+    }
   }
 }

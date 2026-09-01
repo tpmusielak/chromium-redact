@@ -78,7 +78,7 @@ async function crSyncScripts() {
   try {
     await chrome.scripting.registerContentScripts(scripts);
   } catch (e) {
-    console.error('[Redactor] could not register content scripts', e);
+    console.error('[Keyword Redact] could not register content scripts', e);
   }
 }
 
